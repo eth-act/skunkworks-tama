@@ -35,3 +35,12 @@ compile-empty:
 
 run-empty: compile-empty
 	cd tama-programs/empty && ../../$(ZISKEMU) -e empty.elf -i empty_input.bin
+
+trace-empty: compile-empty
+	cd tama-programs/empty && ../../$(ZISKEMU) -e empty.elf -i empty_input.bin -a -v
+
+log-empty: compile-empty
+	cd tama-programs/empty && ../../$(ZISKEMU) -e empty.elf -i empty_input.bin -l -p 1
+
+trace-file-empty: compile-empty
+	cd tama-programs/empty && ../../$(ZISKEMU) -e empty.elf -i empty_input.bin -a -t trace.out && echo "Trace saved to tama-programs/empty/trace.out"

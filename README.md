@@ -63,6 +63,18 @@ Run the compiled program:
 make run-empty
 ```
 
+Debug with instruction tracing:
+```bash
+# Run with RISC-V instruction tracing and verbose output
+make trace-empty
+
+# Log every step with step counter
+make log-empty
+
+# Save trace to file (tama-programs/empty/trace.out)
+make trace-file-empty
+```
+
 Or manually:
 ```bash
 cd tama-programs/empty
@@ -97,6 +109,30 @@ The VM provides minimal "peripherals".
 - Traditional peripherals (UART, GPIO, network, storage, display)
 
 The only system call is `ecall` for program termination and to call special functions.
+
+## Debugging with Instruction Tracing
+
+The ZisK emulator provides several tracing options for debugging:
+
+```bash
+# Enable RISC-V instruction tracing
+ziskemu -e program.elf -i input.bin -a
+
+# Log every step
+ziskemu -e program.elf -i input.bin -l
+
+# Print trace every N steps
+ziskemu -e program.elf -i input.bin -p 100
+
+# Save trace to file
+ziskemu -e program.elf -i input.bin -t trace.out
+
+# Verbose mode
+ziskemu -e program.elf -i input.bin -v
+
+# Generate statistics
+ziskemu -e program.elf -i input.bin -x
+```
 
 ## Clean
 
