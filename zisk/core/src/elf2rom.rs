@@ -7,7 +7,7 @@ use crate::{
     ROM_ADDR_MAX, ROM_ENTRY,
 };
 use elf::{
-    abi::{SHF_EXECINSTR, SHF_WRITE, SHT_PROGBITS},
+    abi::{SHF_EXECINSTR, SHF_WRITE, SHT_PROGBITS, SHT_NOBITS},
     endian::AnyEndian,
     ElfBytes,
 };
@@ -43,8 +43,8 @@ pub fn elf2rom(elf_file: &Path) -> Result<ZiskRom, Box<dyn Error>> {
     // Iterate on the available section headers of the ELF parsed data
     if let Some(section_headers) = elf_bytes.section_headers() {
         for section_header in section_headers {
-            // Consider only the section headers that contain program data
-            if section_header.sh_type == SHT_PROGBITS {
+            // Consider only the section headers that contain program data or BSS
+            if section_header.sh_type == SHT_PROGBITS || section_header.sh_type == SHT_NOBITS {
                 // Get the section header address
                 let addr = section_header.sh_addr;
 
@@ -54,8 +54,14 @@ pub fn elf2rom(elf_file: &Path) -> Result<ZiskRom, Box<dyn Error>> {
                 }
 
                 // Get the section data
-                let (data_u8, _) = elf_bytes.section_data(&section_header)?;
-                let mut data = data_u8.to_vec();
+                let mut data = if section_header.sh_type == SHT_NOBITS {
+                    // BSS sections have no data in the file, just size
+                    // Create a zero-filled vector of the appropriate size
+                    vec![0u8; section_header.sh_size as usize]
+                } else {
+                    let (data_u8, _) = elf_bytes.section_data(&section_header)?;
+                    data_u8.to_vec()
+                };
 
                 // Remove extra bytes if length is not 4-bytes aligned
                 while data.len() % 4 != 0 {
