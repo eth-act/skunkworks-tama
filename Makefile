@@ -1,10 +1,17 @@
-.PHONY: all clean build-tamago build-zisk
+.PHONY: all clean build-tamago build-zisk compile-empty
 
 TAMAGO_DIR = tamago-go-latest
 TAMAGO_SRC = $(TAMAGO_DIR)/src
 TAMAGO_BIN = $(TAMAGO_DIR)/bin
+TAMAGO = $(TAMAGO_BIN)/go
 
 ZISK_DIR = zisk
+ZISKEMU = $(ZISK_DIR)/target/release/ziskemu
+
+# Compilation flags for TamaGo
+GCFLAGS = -gcflags="all=-d=softfloat"
+LDFLAGS = -ldflags="-T 0x80000000"
+TAGS = -tags tamago,linkcpuinit,linkramstart,linkramsize,linkprintk
 
 all: build-tamago build-zisk
 
@@ -23,5 +30,8 @@ clean:
 	rm -f latest.zip
 	cd $(ZISK_DIR) && cargo clean
 
-run-empty:
-	cd tama-programs/empty && $(ZISK_DIR)/target/release/ziskemu -e empty.elf -i empty_input.bin
+compile-empty:
+	cd tama-programs/empty && GOOS=tamago GOARCH=riscv64 ../../$(TAMAGO) build $(GCFLAGS) $(LDFLAGS) $(TAGS) -o empty.elf .
+
+run-empty: compile-empty
+	cd tama-programs/empty && ../../$(ZISKEMU) -e empty.elf -i empty_input.bin
