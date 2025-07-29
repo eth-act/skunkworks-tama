@@ -163,6 +163,23 @@ impl Riscv2ZiskContext<'_> {
             "csrrwi" => self.csrrwi(riscv_instruction),
             "csrrsi" => self.csrrsi(riscv_instruction),
             "csrrci" => self.csrrci(riscv_instruction),
+            // Floating-point instructions - stub implementations for now
+            "flw" => self.nop(riscv_instruction), // TODO: implement float load
+            "fld" => self.nop(riscv_instruction), // TODO: implement double load
+            "fsw" => self.nop(riscv_instruction), // TODO: implement float store
+            "fsd" => self.nop(riscv_instruction), // TODO: implement double store
+            "fadd.s" => self.nop(riscv_instruction), // TODO: implement float add
+            "fadd.d" => self.nop(riscv_instruction), // TODO: implement double add
+            "fsub.s" => self.nop(riscv_instruction), // TODO: implement float sub
+            "fsub.d" => self.nop(riscv_instruction), // TODO: implement double sub
+            "fmul.s" => self.nop(riscv_instruction), // TODO: implement float mul
+            "fmul.d" => self.nop(riscv_instruction), // TODO: implement double mul
+            "fdiv.s" => self.nop(riscv_instruction), // TODO: implement float div
+            "fdiv.d" => self.nop(riscv_instruction), // TODO: implement double div
+            "fsgnj.s" => self.nop(riscv_instruction), // TODO: implement float sign injection
+            "fsgnj.d" => self.nop(riscv_instruction), // TODO: implement double sign injection
+            "fmin.s" => self.nop(riscv_instruction), // TODO: implement float min
+            "fmin.d" => self.nop(riscv_instruction), // TODO: implement double min
             _ => panic!(
                 "Riscv2ZiskContext::convert() found invalid riscv_instruction.inst={}",
                 riscv_instruction.inst

@@ -101,12 +101,13 @@ The VM provides minimal "peripherals".
 - Simple I/O model: read input → compute → write output → exit
 
 ### Not supported:
-- Floating-point instructions (But we can add this)
 - Hardware timers (time is simulated/deterministic)
 - Hardware Interrupts
 - MMU (Memory Management Unit)
 - Hardware RNG (random numbers must be deterministic)
 - Traditional peripherals (UART, GPIO, network, storage, display)
+
+Note: Basic floating-point instruction decoding has been added (opcodes 7, 39, 83) but the instructions currently execute as NOPs.
 
 The only system call is `ecall` for program termination and to call special functions.
 
