@@ -1,0 +1,45 @@
+[package]
+name = "zisk-witness"
+version = { workspace = true }
+edition = { workspace = true }
+license = { workspace = true }
+keywords = { workspace = true }
+repository = { workspace = true }
+categories = { workspace = true }
+
+[lib]
+crate-type = ["dylib"]
+
+[dependencies]
+executor = { path = "../executor" }
+sm-arith = { path = "../state-machines/arith" }
+sm-binary = { path = "../state-machines/binary" }
+sm-main = { path = "../state-machines/main" }
+sm-mem = { path = "../state-machines/mem" }
+sm-rom = { path = "../state-machines/rom" }
+data-bus = { path = "../data-bus" }
+precomp-keccakf = { path = "../precompiles/keccakf" }
+precomp-sha256f = { path = "../precompiles/sha256f" }
+precomp-arith-eq = { path = "../precompiles/arith_eq" }
+zisk-pil = { path = "../pil" }
+ziskemu = { path = "../emulator" }
+zisk-core = { path = "../core" }
+zisk-common = { path = "../common" }
+
+proofman = { workspace = true }
+proofman-common = { workspace = true }
+proofman-util = { workspace = true }
+proofman-macros = { workspace = true }
+witness = { workspace = true }
+fields = { workspace=true }
+pil-std-lib = { workspace = true }
+tracing = { workspace = true }
+
+env_logger = "0.11"
+rayon = { workspace = true }
+
+[features]
+default = []
+no_lib_link = ["proofman-common/no_lib_link"]
+diagnostic = ["proofman-macros/diagnostic", "proofman/diagnostic"]
+disable_distributed = ["proofman/disable_distributed", "proofman-common/disable_distributed"]

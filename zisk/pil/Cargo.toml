@@ -1,0 +1,24 @@
+[package]
+name = "zisk-pil"
+version = { workspace = true }
+edition = { workspace = true }
+license = { workspace = true }
+keywords = { workspace = true }
+repository = { workspace = true }
+categories = { workspace = true }
+
+[dependencies]
+proofman-common = { workspace = true }
+proofman = { workspace = true }
+proofman-macros = { workspace = true }
+serde = { workspace = true }
+rayon = { workspace = true }
+serde_arrays = "0.2"
+
+
+[features]
+default = []
+dev = []
+no_lib_link = ["proofman-common/no_lib_link"]
+diagnostic = ["proofman-macros/diagnostic", "proofman/diagnostic"]
+disable_distributed = ["proofman/disable_distributed", "proofman-common/disable_distributed"]
