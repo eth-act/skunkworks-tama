@@ -39,12 +39,21 @@ make build-zisk
 
 ## Running Programs
 
-### Compile a TamaGo Program without make
+### Compile a TamaGo Program
 
-Example with the empty program:
+Using make (recommended):
+```bash
+make compile-empty
+```
+
+Or manually with all the correct flags:
 ```bash
 cd tama-programs/empty
-GOOS=tamago GOARCH=riscv64 ../../tamago-go-latest/bin/go build -tags tamago -o empty.elf .
+GOOS=tamago GOARCH=riscv64 ../../tamago-go-latest/bin/go build \
+  -gcflags="all=-d=softfloat" \
+  -ldflags="-T 0x80000000" \
+  -tags tamago,linkcpuinit,linkramstart,linkramsize,linkprintk \
+  -o empty.elf .
 ```
 
 ### Run with ZisK Emulator
@@ -65,6 +74,29 @@ cd tama-programs/empty
 After building, the following environment variables are available:
 - `TAMAGO` - Path to the TamaGo compiler
 - `ZISKEMU` - Path to the ZisK emulator
+
+## VM Peripherals
+
+The VM provides minimal "peripherals".
+
+### Memory-mapped I/O regions:
+- **Input Buffer** at `0xa0000000` - Where input data is placed for the program
+- **Output Buffer** at `0xa0010000` - Where programs write output data  
+- **RAM** starting at `0xa0020000` - Main memory for program execution (~512MB)
+
+### Supported features:
+- RISC-V RV64IMA instruction set (`c` is not actually in the go compiler yet)
+- Simple I/O model: read input → compute → write output → exit
+
+### Not supported:
+- Floating-point instructions (But we can add this)
+- Hardware timers (time is simulated/deterministic)
+- Hardware Interrupts
+- MMU (Memory Management Unit)
+- Hardware RNG (random numbers must be deterministic)
+- Traditional peripherals (UART, GPIO, network, storage, display)
+
+The only system call is `ecall` for program termination and to call special functions.
 
 ## Clean
 
