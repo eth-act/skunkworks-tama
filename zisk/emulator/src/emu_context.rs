@@ -66,7 +66,7 @@ impl EmuContext {
         input_buffer.extend_from_slice(&input_len.to_le_bytes());   // 8 bytes at INPUT_ADDR + 8
         input_buffer.extend_from_slice(&input);                     // variable bytes at INPUT_ADDR + 16
         
-        let min_size = 16 + input.len() + 64; // 16 bytes header + input data + 64 bytes padding
+        let min_size = 16 + input.len() + 256; // 16 bytes header + input data + 256 bytes padding
         while input_buffer.len() < min_size {
             input_buffer.push(0);
         }
