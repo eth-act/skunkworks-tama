@@ -3,8 +3,14 @@
 package main
 
 import (
-	_ "tamagotest/tamaboards/zkvm"
+	"fmt"
+	"tamagotest/tamaboards/zkvm"
 )
 
-
-func main() {}
+func main() {
+	fmt.Println("=== TamaGo Program Starting ===")
+	fmt.Println("Program is running on ZisK VM...")
+	fmt.Println("Calling zkvm.Shutdown()...")
+	zkvm.Shutdown()
+	fmt.Println("This line should never be reached!")
+}

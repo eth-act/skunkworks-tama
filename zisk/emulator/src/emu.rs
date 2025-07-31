@@ -1768,6 +1768,11 @@ impl<'a> Emu<'a> {
     #[allow(unused_variables)]
     pub fn step(&mut self, options: &EmuOptions, callback: &Option<impl Fn(EmuTrace)>) {
         let pc = self.ctx.inst_ctx.pc;
+        
+        if pc == ROM_ENTRY {
+            println!("DEBUG: Program started at entry point PC=0x{:x}", pc);
+        }
+        
         let instruction = self.rom.get_instruction(self.ctx.inst_ctx.pc);
 
         // println!(

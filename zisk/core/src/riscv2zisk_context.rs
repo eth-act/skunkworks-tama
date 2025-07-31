@@ -686,14 +686,15 @@ impl Riscv2ZiskContext<'_> {
 
     /// Makes a system call
     pub fn ecall(&mut self, _i: &RiscvInstruction) {
+        println!("DEBUG: ECALL instruction encountered at PC=0x{:x} - terminating program", self.s);
         let mut zib = ZiskInstBuilder::new(self.s);
         zib.src_a("imm", 0, false);
-        zib.src_b("mem", MTVEC, false);
+        zib.src_b("imm", 0, false);
         zib.op("copyb").unwrap();
-        zib.store_ra("reg", 1, false);
         zib.set_pc();
+        zib.end();
         zib.j(0, 4);
-        zib.verbose("ecall");
+        zib.verbose("ecall # Exit call - terminate program");
         zib.build();
         self.insts.insert(self.s, zib);
         self.s += 4;

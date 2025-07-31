@@ -228,6 +228,13 @@ impl Mem {
             new_section.end += 1;
         }
 
+        if new_section.end < start + 8 {
+            while new_section.end < start + 8 {
+                new_section.buffer.push(0);
+                new_section.end += 1;
+            }
+        }
+
         //println!("Mem::add_read_section() new section={}", new_section.to_text());
 
         // Add the new section to the read sections
@@ -276,7 +283,7 @@ impl Mem {
         debug_assert!(!Mem::address_is_register(addr));
 
         // First try to read in the write section
-        if (addr >= self.write_section.start) && (addr <= (self.write_section.end - width)) {
+        if (addr >= self.write_section.start) && (addr + width <= self.write_section.end) {
             // Calculate the read position
             let read_position: usize = (addr - self.write_section.start) as usize;
 
@@ -304,7 +311,7 @@ impl Mem {
         let section = if let Ok(section) = self.read_sections.binary_search_by(|section| {
             if addr < section.start {
                 std::cmp::Ordering::Greater
-            } else if addr > section.end - width {
+            } else if addr + width > section.end {
                 std::cmp::Ordering::Less
             } else {
                 std::cmp::Ordering::Equal
@@ -366,7 +373,7 @@ impl Mem {
         let is_double_not_aligned = !is_full_aligned && !is_single_not_aligned;
 
         // First try to read in the write section
-        if (addr >= self.write_section.start) && (addr <= (self.write_section.end - width)) {
+        if (addr >= self.write_section.start) && (addr + width <= self.write_section.end) {
             // Calculate the read position
             let read_position: usize = (addr - self.write_section.start) as usize;
 
@@ -534,7 +541,7 @@ impl Mem {
         let section = if let Ok(section) = self.read_sections.binary_search_by(|section| {
             if addr < section.start {
                 std::cmp::Ordering::Greater
-            } else if addr > (section.end - width) {
+            } else if addr + width > section.end {
                 std::cmp::Ordering::Less
             } else {
                 std::cmp::Ordering::Equal
@@ -583,7 +590,7 @@ impl Mem {
         let section = if let Ok(section) = self.read_sections.binary_search_by(|section| {
             if addr < section.start {
                 std::cmp::Ordering::Greater
-            } else if addr > (section.end - width) {
+            } else if addr + width > section.end {
                 std::cmp::Ordering::Less
             } else {
                 std::cmp::Ordering::Equal
