@@ -1463,10 +1463,6 @@ impl<'a> Emu<'a> {
     /// Performs one single step of the emulation
     #[inline(always)]
     pub fn step_fast(&mut self) {
-        if self.ctx.inst_ctx.pc == 0 {
-            self.ctx.inst_ctx.end = true;
-            return;
-        }
         let instruction = self.rom.get_instruction(self.ctx.inst_ctx.pc);
         // let debug = instruction.op >= 0xf6;
         // let initial_regs = if debug {
@@ -1772,12 +1768,6 @@ impl<'a> Emu<'a> {
     #[allow(unused_variables)]
     pub fn step(&mut self, options: &EmuOptions, callback: &Option<impl Fn(EmuTrace)>) {
         let pc = self.ctx.inst_ctx.pc;
-        
-        if self.ctx.inst_ctx.pc == 0 {
-            println!("DEBUG: Program terminated at PC=0");
-            self.ctx.inst_ctx.end = true;
-            return;
-        }
         
         if pc == ROM_ENTRY {
             println!("DEBUG: Program started at entry point PC=0x{:x}", pc);
