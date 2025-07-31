@@ -58,12 +58,20 @@ impl EmuContext {
             panic!("EmuContext::new() input size too big size={}", input.len());
         }
 
-        // Add the length and input data read sections
         let input_len = input.len() as u64;
         let free_input = 0u64;
-        ctx.inst_ctx.mem.add_read_section(INPUT_ADDR, &free_input.to_le_bytes());
-        ctx.inst_ctx.mem.add_read_section(INPUT_ADDR + 8, &input_len.to_le_bytes());
-        ctx.inst_ctx.mem.add_read_section(INPUT_ADDR + 16, &input);
+        
+        let mut input_buffer = Vec::new();
+        input_buffer.extend_from_slice(&free_input.to_le_bytes());  // 8 bytes at INPUT_ADDR
+        input_buffer.extend_from_slice(&input_len.to_le_bytes());   // 8 bytes at INPUT_ADDR + 8
+        input_buffer.extend_from_slice(&input);                     // variable bytes at INPUT_ADDR + 16
+        
+        let min_size = 16 + input.len() + 64; // 16 bytes header + input data + 64 bytes padding
+        while input_buffer.len() < min_size {
+            input_buffer.push(0);
+        }
+        
+        ctx.inst_ctx.mem.add_read_section(INPUT_ADDR, &input_buffer);
 
         // Add the write section
         ctx.inst_ctx.mem.add_write_section(RAM_ADDR, RAM_SIZE);

@@ -156,6 +156,8 @@ impl ZiskRom {
         } else if pc >= ROM_ENTRY {
             // pc is in the ROM_ENTRY range (always alligned)
             &self.rom_entry_instructions[((pc - ROM_ENTRY) >> 2) as usize]
+        } else if pc == 0 {
+            panic!("ZiskRom::get_instruction() pc=0 is out of range");
         } else {
             panic!("ZiskRom::get_instruction() pc={pc} is out of range");
         }
