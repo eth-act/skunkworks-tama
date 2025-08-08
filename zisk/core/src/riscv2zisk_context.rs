@@ -1372,17 +1372,10 @@ impl Riscv2ZiskContext<'_> {
 /// Converts a buffer with RISC-V data into a vector of Zisk instructions, using the
 /// Riscv2ZiskContext to perform the instruction transpilation
 pub fn add_zisk_code(rom: &mut ZiskRom, addr: u64, data: &[u8]) {
-    println!("add_zisk_code() addr=0x{:x}, data_len={} bytes", addr, data.len());
+    //print!("add_zisk_code() addr={}\n", addr);
 
     // Convert input data to a u32 vector
     let code_vector: Vec<u32> = convert_vector(data);
-    
-    // Debug: Show first few u32 values and count zeros
-    let zeros_count = code_vector.iter().filter(|&&x| x == 0).count();
-    println!("  Converted to {} u32 values, {} are zero", code_vector.len(), zeros_count);
-    if code_vector.len() > 0 {
-        println!("  First few u32 values: {:?}", &code_vector[..std::cmp::min(10, code_vector.len())]);
-    }
 
     // Convert data vector to RISCV instructions
     let riscv_instructions = riscv_interpreter(&code_vector);

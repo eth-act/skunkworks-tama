@@ -23,11 +23,7 @@ pub fn convert_vector(input: &[u8]) -> Vec<u32> {
 
     // For every output u32 data, calculate it based on input u8 data, in little endian order
     for i in 0..output_len {
-        let val = u32::from_le_bytes(input[4 * i..4 * i + 4].try_into().unwrap());
-        if val == 0 {
-            println!("    Found 0x00000000 at byte offset {} (u32 index {})", i * 4, i);
-        }
-        output.push(val);
+        output.push(u32::from_le_bytes(input[4 * i..4 * i + 4].try_into().unwrap()));
     }
 
     // Return the output u32 vector
