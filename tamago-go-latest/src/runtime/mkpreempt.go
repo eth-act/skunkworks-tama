@@ -556,11 +556,11 @@ func genRISCV64() {
 		l.add("MOV", reg, 8)
 	}
 
-	// Add floating point registers (F0-F31).
-	for i := 0; i <= 31; i++ {
-		reg := fmt.Sprintf("F%d", i)
-		l.add("MOVD", reg, 8)
-	}
+	// Floating point registers removed for tamago - no FP support
+	// for i := 0; i <= 31; i++ {
+	//	reg := fmt.Sprintf("F%d", i)
+	//	l.add("MOVD", reg, 8)
+	// }
 
 	p("MOV X1, -%d(X2)", l.stack)
 	p("SUB $%d, X2", l.stack)

@@ -715,22 +715,23 @@ TEXT ·spillArgs(SB),NOSPLIT,$0-0
 	MOV	X21, (13*8)(X25)
 	MOV	X22, (14*8)(X25)
 	MOV	X23, (15*8)(X25)
-	MOVD	F10, (16*8)(X25)
-	MOVD	F11, (17*8)(X25)
-	MOVD	F12, (18*8)(X25)
-	MOVD	F13, (19*8)(X25)
-	MOVD	F14, (20*8)(X25)
-	MOVD	F15, (21*8)(X25)
-	MOVD	F16, (22*8)(X25)
-	MOVD	F17, (23*8)(X25)
-	MOVD	F8,  (24*8)(X25)
-	MOVD	F9,  (25*8)(X25)
-	MOVD	F18, (26*8)(X25)
-	MOVD	F19, (27*8)(X25)
-	MOVD	F20, (28*8)(X25)
-	MOVD	F21, (29*8)(X25)
-	MOVD	F22, (30*8)(X25)
-	MOVD	F23, (31*8)(X25)
+	// Floating point registers removed for tamago - no FP support
+	// MOVD	F10, (16*8)(X25)
+	// MOVD	F11, (17*8)(X25)
+	// MOVD	F12, (18*8)(X25)
+	// MOVD	F13, (19*8)(X25)
+	// MOVD	F14, (20*8)(X25)
+	// MOVD	F15, (21*8)(X25)
+	// MOVD	F16, (22*8)(X25)
+	// MOVD	F17, (23*8)(X25)
+	// MOVD	F8,  (24*8)(X25)
+	// MOVD	F9,  (25*8)(X25)
+	// MOVD	F18, (26*8)(X25)
+	// MOVD	F19, (27*8)(X25)
+	// MOVD	F20, (28*8)(X25)
+	// MOVD	F21, (29*8)(X25)
+	// MOVD	F22, (30*8)(X25)
+	// MOVD	F23, (31*8)(X25)
 	RET
 
 // unspillArgs loads args into registers from a *internal/abi.RegArgs in X25.
@@ -751,22 +752,23 @@ TEXT ·unspillArgs(SB),NOSPLIT,$0-0
 	MOV	(13*8)(X25), X21
 	MOV	(14*8)(X25), X22
 	MOV	(15*8)(X25), X23
-	MOVD	(16*8)(X25), F10
-	MOVD	(17*8)(X25), F11
-	MOVD	(18*8)(X25), F12
-	MOVD	(19*8)(X25), F13
-	MOVD	(20*8)(X25), F14
-	MOVD	(21*8)(X25), F15
-	MOVD	(22*8)(X25), F16
-	MOVD	(23*8)(X25), F17
-	MOVD	(24*8)(X25), F8
-	MOVD	(25*8)(X25), F9
-	MOVD	(26*8)(X25), F18
-	MOVD	(27*8)(X25), F19
-	MOVD	(28*8)(X25), F20
-	MOVD	(29*8)(X25), F21
-	MOVD	(30*8)(X25), F22
-	MOVD	(31*8)(X25), F23
+	// Floating point registers removed for tamago - no FP support
+	// MOVD	(16*8)(X25), F10
+	// MOVD	(17*8)(X25), F11
+	// MOVD	(18*8)(X25), F12
+	// MOVD	(19*8)(X25), F13
+	// MOVD	(20*8)(X25), F14
+	// MOVD	(21*8)(X25), F15
+	// MOVD	(22*8)(X25), F16
+	// MOVD	(23*8)(X25), F17
+	// MOVD	(24*8)(X25), F8
+	// MOVD	(25*8)(X25), F9
+	// MOVD	(26*8)(X25), F18
+	// MOVD	(27*8)(X25), F19
+	// MOVD	(28*8)(X25), F20
+	// MOVD	(29*8)(X25), F21
+	// MOVD	(30*8)(X25), F22
+	// MOVD	(31*8)(X25), F23
 	RET
 
 // gcWriteBarrier informs the GC about heap pointer writes.

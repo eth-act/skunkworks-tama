@@ -14,8 +14,8 @@
  */
 .globl crosscall1
 crosscall1:
-	sd	x1, -200(sp)
-	addi	sp, sp, -200
+	sd	x1, -104(sp)
+	addi	sp, sp, -104
 	sd	x8, 8(sp)
 	sd	x9, 16(sp)
 	sd	x18, 24(sp)
@@ -28,18 +28,19 @@ crosscall1:
 	sd	x25, 80(sp)
 	sd	x26, 88(sp)
 	sd	x27, 96(sp)
-	fsd	f8, 104(sp)
-	fsd	f9, 112(sp)
-	fsd	f18, 120(sp)
-	fsd	f19, 128(sp)
-	fsd	f20, 136(sp)
-	fsd	f21, 144(sp)
-	fsd	f22, 152(sp)
-	fsd	f23, 160(sp)
-	fsd	f24, 168(sp)
-	fsd	f25, 176(sp)
-	fsd	f26, 184(sp)
-	fsd	f27, 192(sp)
+	// Floating point registers removed for tamago - no FP support
+	// fsd	f8, 104(sp)
+	// fsd	f9, 112(sp)
+	// fsd	f18, 120(sp)
+	// fsd	f19, 128(sp)
+	// fsd	f20, 136(sp)
+	// fsd	f21, 144(sp)
+	// fsd	f22, 152(sp)
+	// fsd	f23, 160(sp)
+	// fsd	f24, 168(sp)
+	// fsd	f25, 176(sp)
+	// fsd	f26, 184(sp)
+	// fsd	f27, 192(sp)
 
 	// a0 = *fn, a1 = *setg_gcc, a2 = *g
 	mv	s1, a0
@@ -61,19 +62,20 @@ crosscall1:
 	ld	x25, 80(sp)
 	ld	x26, 88(sp)
 	ld	x27, 96(sp)
-	fld	f8, 104(sp)
-	fld	f9, 112(sp)
-	fld	f18, 120(sp)
-	fld	f19, 128(sp)
-	fld	f20, 136(sp)
-	fld	f21, 144(sp)
-	fld	f22, 152(sp)
-	fld	f23, 160(sp)
-	fld	f24, 168(sp)
-	fld	f25, 176(sp)
-	fld	f26, 184(sp)
-	fld	f27, 192(sp)
-	addi	sp, sp, 200
+	// Floating point registers removed for tamago - no FP support
+	// fld	f8, 104(sp)
+	// fld	f9, 112(sp)
+	// fld	f18, 120(sp)
+	// fld	f19, 128(sp)
+	// fld	f20, 136(sp)
+	// fld	f21, 144(sp)
+	// fld	f22, 152(sp)
+	// fld	f23, 160(sp)
+	// fld	f24, 168(sp)
+	// fld	f25, 176(sp)
+	// fld	f26, 184(sp)
+	// fld	f27, 192(sp)
+	addi	sp, sp, 104
 
 	jr	ra
 
