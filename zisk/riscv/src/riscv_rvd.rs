@@ -52,17 +52,6 @@ impl Rvd {
             self.opcodes.insert(3, info);
         }
 
-        // Opcode 7 (0x07) - Floating-point load
-        {
-            let mut info = RvdInfo {
-                t: String::from("I"),
-                op: RvdOperation { s: String::new(), map: HashMap::new() },
-            };
-            info.op.map.insert(2, RvdOperation { s: String::from("flw"), map: HashMap::new() });
-            info.op.map.insert(3, RvdOperation { s: String::from("fld"), map: HashMap::new() });
-            self.opcodes.insert(7, info);
-        }
-
         // Opcode 15
         {
             let mut info = RvdInfo {
@@ -142,17 +131,6 @@ impl Rvd {
             info.op.map.insert(2, RvdOperation { s: String::from("sw"), map: HashMap::new() });
             info.op.map.insert(3, RvdOperation { s: String::from("sd"), map: HashMap::new() });
             self.opcodes.insert(35, info);
-        }
-
-        // Opcode 39 (0x27) - Floating-point store
-        {
-            let mut info = RvdInfo {
-                t: String::from("S"),
-                op: RvdOperation { s: String::new(), map: HashMap::new() },
-            };
-            info.op.map.insert(2, RvdOperation { s: String::from("fsw"), map: HashMap::new() });
-            info.op.map.insert(3, RvdOperation { s: String::from("fsd"), map: HashMap::new() });
-            self.opcodes.insert(39, info);
         }
 
         // Opcode 47
@@ -373,52 +351,6 @@ impl Rvd {
             info.op.map.insert(6, RvdOperation { s: String::from("csrrsi"), map: HashMap::new() });
             info.op.map.insert(7, RvdOperation { s: String::from("csrrci"), map: HashMap::new() });
             self.opcodes.insert(115, info);
-        }
-
-        // Opcode 83 (0x53) - Floating-point operations
-        {
-            let mut info = RvdInfo {
-                t: String::from("R"),
-                op: RvdOperation { s: String::new(), map: HashMap::new() },
-            };
-            
-            // funct3 = 0: FADD.S/FADD.D (based on funct7)
-            let mut funct3_0 = RvdOperation { s: String::new(), map: HashMap::new() };
-            funct3_0.map.insert(0, RvdOperation { s: String::from("fadd.s"), map: HashMap::new() });
-            funct3_0.map.insert(1, RvdOperation { s: String::from("fadd.d"), map: HashMap::new() });
-            info.op.map.insert(0, funct3_0);
-            
-            // funct3 = 1: FSUB.S/FSUB.D
-            let mut funct3_1 = RvdOperation { s: String::new(), map: HashMap::new() };
-            funct3_1.map.insert(4, RvdOperation { s: String::from("fsub.s"), map: HashMap::new() });
-            funct3_1.map.insert(5, RvdOperation { s: String::from("fsub.d"), map: HashMap::new() });
-            info.op.map.insert(1, funct3_1);
-            
-            // funct3 = 2: FMUL.S/FMUL.D
-            let mut funct3_2 = RvdOperation { s: String::new(), map: HashMap::new() };
-            funct3_2.map.insert(8, RvdOperation { s: String::from("fmul.s"), map: HashMap::new() });
-            funct3_2.map.insert(9, RvdOperation { s: String::from("fmul.d"), map: HashMap::new() });
-            info.op.map.insert(2, funct3_2);
-            
-            // funct3 = 3: FDIV.S/FDIV.D
-            let mut funct3_3 = RvdOperation { s: String::new(), map: HashMap::new() };
-            funct3_3.map.insert(12, RvdOperation { s: String::from("fdiv.s"), map: HashMap::new() });
-            funct3_3.map.insert(13, RvdOperation { s: String::from("fdiv.d"), map: HashMap::new() });
-            info.op.map.insert(3, funct3_3);
-            
-            // funct3 = 4: FSGNJ operations
-            let mut funct3_4 = RvdOperation { s: String::new(), map: HashMap::new() };
-            funct3_4.map.insert(16, RvdOperation { s: String::from("fsgnj.s"), map: HashMap::new() });
-            funct3_4.map.insert(17, RvdOperation { s: String::from("fsgnj.d"), map: HashMap::new() });
-            info.op.map.insert(4, funct3_4);
-            
-            // funct3 = 5: FMIN/FMAX operations
-            let mut funct3_5 = RvdOperation { s: String::new(), map: HashMap::new() };
-            funct3_5.map.insert(20, RvdOperation { s: String::from("fmin.s"), map: HashMap::new() });
-            funct3_5.map.insert(21, RvdOperation { s: String::from("fmin.d"), map: HashMap::new() });
-            info.op.map.insert(5, funct3_5);
-            
-            self.opcodes.insert(83, info);
         }
     }
 }

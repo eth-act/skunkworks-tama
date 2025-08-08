@@ -163,23 +163,6 @@ impl Riscv2ZiskContext<'_> {
             "csrrwi" => self.csrrwi(riscv_instruction),
             "csrrsi" => self.csrrsi(riscv_instruction),
             "csrrci" => self.csrrci(riscv_instruction),
-            // Floating-point instructions - stub implementations for now
-            "flw" => self.nop(riscv_instruction), // TODO: implement float load
-            "fld" => self.nop(riscv_instruction), // TODO: implement double load
-            "fsw" => self.nop(riscv_instruction), // TODO: implement float store
-            "fsd" => self.nop(riscv_instruction), // TODO: implement double store
-            "fadd.s" => self.nop(riscv_instruction), // TODO: implement float add
-            "fadd.d" => self.nop(riscv_instruction), // TODO: implement double add
-            "fsub.s" => self.nop(riscv_instruction), // TODO: implement float sub
-            "fsub.d" => self.nop(riscv_instruction), // TODO: implement double sub
-            "fmul.s" => self.nop(riscv_instruction), // TODO: implement float mul
-            "fmul.d" => self.nop(riscv_instruction), // TODO: implement double mul
-            "fdiv.s" => self.nop(riscv_instruction), // TODO: implement float div
-            "fdiv.d" => self.nop(riscv_instruction), // TODO: implement double div
-            "fsgnj.s" => self.nop(riscv_instruction), // TODO: implement float sign injection
-            "fsgnj.d" => self.nop(riscv_instruction), // TODO: implement double sign injection
-            "fmin.s" => self.nop(riscv_instruction), // TODO: implement float min
-            "fmin.d" => self.nop(riscv_instruction), // TODO: implement double min
             _ => panic!(
                 "Riscv2ZiskContext::convert() found invalid riscv_instruction.inst={}",
                 riscv_instruction.inst
@@ -1389,10 +1372,17 @@ impl Riscv2ZiskContext<'_> {
 /// Converts a buffer with RISC-V data into a vector of Zisk instructions, using the
 /// Riscv2ZiskContext to perform the instruction transpilation
 pub fn add_zisk_code(rom: &mut ZiskRom, addr: u64, data: &[u8]) {
-    //print!("add_zisk_code() addr={}\n", addr);
+    println!("add_zisk_code() addr=0x{:x}, data_len={} bytes", addr, data.len());
 
     // Convert input data to a u32 vector
     let code_vector: Vec<u32> = convert_vector(data);
+    
+    // Debug: Show first few u32 values and count zeros
+    let zeros_count = code_vector.iter().filter(|&&x| x == 0).count();
+    println!("  Converted to {} u32 values, {} are zero", code_vector.len(), zeros_count);
+    if code_vector.len() > 0 {
+        println!("  First few u32 values: {:?}", &code_vector[..std::cmp::min(10, code_vector.len())]);
+    }
 
     // Convert data vector to RISCV instructions
     let riscv_instructions = riscv_interpreter(&code_vector);
