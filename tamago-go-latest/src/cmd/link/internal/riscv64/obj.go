@@ -19,6 +19,9 @@ func Init() (*sys.Arch, ld.Arch) {
 		Minalign:   minAlign,
 		Dwarfregsp: dwarfRegSP,
 		Dwarfreglr: dwarfRegLR,
+		// TODO: Check if this is needed. 
+		// TODO: We want to avoid padding being all zeroes 		
+		CodePad: []byte{0x13, 0, 0, 0},
 
 		Adddynrel:        adddynrel,
 		Archinit:         archinit,
