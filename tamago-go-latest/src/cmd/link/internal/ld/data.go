@@ -2868,6 +2868,12 @@ func (ctxt *Link) address() []*sym.Segment {
 		// Already done if relro sections exist.
 		va += uint64(XCOFFDATABASE) - uint64(XCOFFTEXTBASE)
 	}
+	
+	// If -D flag is specified, use it for data segment address
+	if *FlagDataAddr != -1 {
+		va = uint64(*FlagDataAddr)
+	}
+	
 	order = append(order, &Segdata)
 	Segdata.Rwx = 06
 	Segdata.Vaddr = va
@@ -3124,6 +3130,19 @@ func (ctxt *Link) layout(order []*sym.Segment) uint64 {
 				// should ensure that this segment's
 				// VA ≡ Fileoff mod FlagRound.
 				seg.Fileoff = uint64(Rnd(int64(prev.Fileoff+prev.Filelen), *FlagRound))
+				// If -D flag was used to place data segment at a specific address,
+				// we may have a non-contiguous layout. In this case, we need to
+				// adjust the file offset to maintain the congruence requirement.
+				if seg == &Segdata && *FlagDataAddr != -1 {
+					// Adjust file offset to maintain VA ≡ Fileoff mod FlagRound
+					adjustment := (seg.Vaddr % uint64(*FlagRound)) - (seg.Fileoff % uint64(*FlagRound))
+					if adjustment != 0 {
+						seg.Fileoff += adjustment
+						if adjustment < 0 {
+							seg.Fileoff += uint64(*FlagRound)
+						}
+					}
+				}
 				if seg.Vaddr%uint64(*FlagRound) != seg.Fileoff%uint64(*FlagRound) {
 					Exitf("bad segment rounding (Vaddr=%#x Fileoff=%#x FlagRound=%#x)", seg.Vaddr, seg.Fileoff, *FlagRound)
 				}
