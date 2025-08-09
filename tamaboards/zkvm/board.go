@@ -3,44 +3,44 @@
 package zkvm
 
 import (
+	"runtime"
 	"unsafe"
-	// _ "github.com/usbarmory/tamago/riscv64"
+	_ "github.com/usbarmory/tamago/riscv64"
 )
 
 const (
-	// ZisK I/O addresses
-	INPUT_ADDR  = 0xa0000000
-	OUTPUT_ADDR = 0xa0010000
+	// ZisK ROM addresses (matching Zisk memory map from mem.rs)
+	ROM_ENTRY = 0x1000      // First BIOS instruction address
+	ROM_EXIT  = 0x1004      // Last BIOS instruction address
+	ROM_ADDR  = 0x80000000  // First program ROM instruction address
+	
+	// ZisK I/O addresses (matching Zisk memory map from mem.rs)
+	INPUT_ADDR  = 0x90000000  // First input data memory address
+	SYS_ADDR    = 0xa0000000  // First system RW memory address (RAM_ADDR)
+	// TODO: Check: Can BSS be initialized at system address and UART_ADDR overwrite it
+	UART_ADDR   = 0xa0000200  // UART memory address (SYS_ADDR + 512)
+	OUTPUT_ADDR = 0xa0010000  // First output RW memory address
 )
 
-var outputCount uint32 = 0
-
 //go:linkname ramStart runtime.ramStart
-var ramStart uint64 = 0xa0020000 // Match ZisK's RAM location
+var ramStart uint64 = 0xa0020000 // Match ZisK's AVAILABLE_MEM_ADDR
 
 //go:linkname ramSize runtime.ramSize
 var ramSize uint64 = 0x1FFE0000 // Match ZisK's RAM size (~512MB)
 
 // ramStackOffset is always defined here as there's no linkramstackoffset build tag
 //go:linkname ramStackOffset runtime.ramStackOffset
-var ramStackOffset uint64 = 0x100000 // 1MB stack (matching ZisK)
+var ramStackOffset uint64 = 0x100000 // 1MB stack (matching linker script and ZisK)
 
+// TODO: We can probably remove this
 // Bloc sets the heap start address to bypass initBloc() 
 //go:linkname Bloc runtime.Bloc
-var Bloc uintptr = 0xa0100000 // Start heap after stack (ramStart + ramStackOffset)
+var Bloc uintptr = 0xa0120000 // Start heap after stack (ramStart + ramStackOffset)
 
 // printk implementation for zkVM
 //go:linkname printk runtime.printk
 func printk(c byte) {
-	// TODO: This is a stub. Just write to the output address
-	// Write directly to OUTPUT_ADDR
-	// Format: [count:u32][data:bytes]
-	// First update the count at OUTPUT_ADDR
-	outputCount++
-	*(*uint32)(unsafe.Pointer(uintptr(OUTPUT_ADDR))) = outputCount
-	
-	// Write the byte at OUTPUT_ADDR + 4 + (outputCount-1)
-	*(*byte)(unsafe.Pointer(uintptr(OUTPUT_ADDR + 4 + outputCount - 1))) = c
+	*(*byte)(unsafe.Pointer(uintptr(UART_ADDR))) = c
 }
 
 // hwinit1 is now defined in hwinit1.s 
@@ -54,8 +54,16 @@ var timer int64 = 0
 func nanotime1() int64 {
 	// Return deterministic time for zkVM
 	// Could be based on instruction count or fixed increments
+	// Or just return number of clock cycles
 	timer++
 	return timer * 1000
+}
+
+// Init initializes the zkVM 
+//go:linkname Init runtime.hwinit1
+func Init() {
+	// Set up custom exit handler
+	runtime.Exit = zkVMExit
 }
 
 //go:linkname initRNG runtime.initRNG
@@ -73,11 +81,17 @@ func getRandomData(b []byte) {
 	}
 }
 
-// Init initializes the zkVM board
-func Init() {
-	timer = 0
+// zkVMExit is our custom exit handler that intercepts runtime.exit calls
+func zkVMExit(code int32) {
+	// TODO: Add a println about what the exit code is
+	// Zisk exit via ecall
+	Shutdown()
 }
-
 
 // Shutdown is defined in shutdown.s and uses ecall to exit
 func Shutdown()
+
+// setRegisters is defined in hwinit1.s and sets A0/A1 registers
+// A0 = INPUT_ADDR (0x90000000)
+// A1 = OUTPUT_ADDR (0xa0010000)
+func setRegisters()
