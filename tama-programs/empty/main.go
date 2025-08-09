@@ -8,5 +8,7 @@ import (
 )
 
 func main() {	
-	fmt.Println("Hello World")
+	x := 10
+	y := 11
+	fmt.Println("Hello World", x + y)
 }
