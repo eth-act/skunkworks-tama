@@ -14,7 +14,7 @@ make
 ```
 
 This will:
-1. Download and build TamaGo
+1. Build TamaGo
 2. Build the emulator
 
 ### Build Components Individually
@@ -31,15 +31,15 @@ make build-zisk
 
 ## Project Structure
 
-- `tamago-go-latest/` - TamaGo compiler
+- `tamago-go-latest/` - TamaGo compiler (modified for softfloat support)
 - `zisk/` - emulator source
 - `tamaboards/zkvm/` - Board support package
 - `tama-programs/` - Example programs
-  - `empty/` - Minimal empty program
+  - `empty/` - Minimal "Hello World" program
 
 ## Running Programs
 
-### Compile a TamaGo Program
+### Compile the TamaGo Program
 
 Using make (recommended):
 ```bash
@@ -60,25 +60,25 @@ GOOS=tamago GOARCH=riscv64 ../../tamago-go-latest/bin/go build \
 
 Run the compiled program:
 ```bash
-make run-empty
+# Run with verbose output and console logging
+make run-empty-emu
+
+# Run quietly with just console output
+make run-empty-emu-quiet
 ```
 
-Debug with instruction tracing:
+### Setup ROM for ZisK
+
+Generate ROM setup for the program:
 ```bash
-# Run with RISC-V instruction tracing and verbose output
-make trace-empty
-
-# Log every step with step counter
-make log-empty
-
-# Save trace to file (tama-programs/empty/trace.out)
-make trace-file-empty
+make run-empty-rom
 ```
 
 Or manually:
 ```bash
 cd tama-programs/empty
-../../zisk/target/release/ziskemu -e empty.elf -i empty_input.bin
+# Note: The -c flag is required to see console output!
+../../zisk/target/debug/ziskemu --elf empty.elf -c
 ```
 
 ## Environment Variables
@@ -106,8 +106,7 @@ The VM provides minimal "peripherals".
 - MMU (Memory Management Unit)
 - Hardware RNG (random numbers must be deterministic)
 - Traditional peripherals (UART, GPIO, network, storage, display)
-
-Note: Basic floating-point instruction decoding has been added (opcodes 7, 39, 83) but the instructions currently execute as NOPs.
+- Floating-point instructions (compiled with softfloat, any FP instructions will panic the emulator)
 
 The only system call is `ecall` for program termination and to call special functions.
 
@@ -116,24 +115,29 @@ The only system call is `ecall` for program termination and to call special func
 The ZisK emulator provides several tracing options for debugging:
 
 ```bash
-# Enable RISC-V instruction tracing
-ziskemu -e program.elf -i input.bin -a
+# Run with console output (REQUIRED to see program output)
+ziskemu --elf program.elf -c
+
+# Verbose mode with console output
+ziskemu --elf program.elf -v -c
 
 # Log every step
-ziskemu -e program.elf -i input.bin -l
+ziskemu --elf program.elf -l
 
 # Print trace every N steps
-ziskemu -e program.elf -i input.bin -p 100
+ziskemu --elf program.elf -p 100
 
 # Save trace to file
-ziskemu -e program.elf -i input.bin -t trace.out
+ziskemu --elf program.elf -t trace.out
 
-# Verbose mode
-ziskemu -e program.elf -i input.bin -v
+# Enable RISC-V instruction tracing
+ziskemu --elf program.elf -a
 
 # Generate statistics
-ziskemu -e program.elf -i input.bin -x
+ziskemu --elf program.elf -x
 ```
+
+**Important**: The `-c` flag is required to see console output from your program!
 
 ## Clean
 
