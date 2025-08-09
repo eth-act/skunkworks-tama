@@ -19,7 +19,7 @@ LDFLAGS_INTERNAL = -ldflags="\
 LDFLAGS = $(LDFLAGS_EXTERNAL)
 TAGS = -tags tamago,linkcpuinit,linkramstart,linkramsize,linkprintk
 
-all: build-tamago build-zisk
+all: build-tamago build-zisk compile-empty run-empty-emu-quiet
 
 build-tamago:
 	cd $(TAMAGO_SRC) && ./make.bash
