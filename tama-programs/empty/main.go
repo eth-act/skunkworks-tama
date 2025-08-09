@@ -4,7 +4,6 @@ package main
 
 import (
 	"fmt"
-	"unsafe"
 	_ "tamagotest/tamaboards/zkvm"
 )
 
