@@ -44,8 +44,8 @@ compile-addition:
 	@echo "=== Generating witness for addition program ==="
 	go run ./tama-witgen/addition/main.go
 
-compile-geth-stateless:
-	cd tama-programs/ethereum-test && CGO_ENABLED=0 GOROOT=$(PWD)/$(TAMAGO_DIR) GOOS=tamago GOARCH=riscv64 ../../$(TAMAGO_BIN)/go build $(GCFLAGS) $(LDFLAGS_INTERNAL) $(TAGS) -o geth-stateless.elf .
+compile-stateless:
+	cd tama-programs/stateless && CGO_ENABLED=0 GOROOT=$(PWD)/$(TAMAGO_DIR) GOOS=tamago GOARCH=riscv64 ../../$(TAMAGO_BIN)/go build $(GCFLAGS) $(LDFLAGS_INTERNAL) $(TAGS) -o geth-stateless.elf .
 
 run-empty-emu:
 	cd tama-programs/empty && ../../$(ZISKEMU) --elf empty.elf -v -c
