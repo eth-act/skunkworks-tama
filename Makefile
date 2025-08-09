@@ -38,7 +38,10 @@ compile-empty:
 	cd tama-programs/empty && CGO_ENABLED=0 GOROOT=$(PWD)/$(TAMAGO_DIR) GOOS=tamago GOARCH=riscv64 ../../$(TAMAGO_BIN)/go build $(GCFLAGS) $(LDFLAGS_INTERNAL) $(TAGS) -o empty.elf .
 
 run-empty-emu:
-	cd tama-programs/empty && ../../$(ZISKEMU) --elf empty.elf -v
+	cd tama-programs/empty && ../../$(ZISKEMU) --elf empty.elf -v -c
+
+run-empty-emu-quiet:
+	cd tama-programs/empty && ../../$(ZISKEMU) --elf empty.elf -c
 
 run-empty-rom:
 	$(CARGO_ZISK) rom-setup --elf tama-programs/empty/empty.elf
