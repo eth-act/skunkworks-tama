@@ -75,17 +75,33 @@ func UnsafeReadBytes(n int) []byte {
 
 // CommitBytes writes bytes to the output buffer and advances the pointer
 //
-// Noite: This method is used for writing public inputs.
-// It is not used for sending data fromthe host to guest.
+// Note: This method is used for writing public inputs.
+// It is not used for sending data from the host to guest.
+//
+// The emulator expects output in this format:
+// - First 4 bytes at OUTPUT_ADDR: count of u32 values (not bytes!)
+// - Then the actual data as u32 values starting at OUTPUT_ADDR + 4
 // TODO: Think about function naming
 func CommitBytes(data []byte) {
-	dst := unsafe.Pointer(uintptr(zkvm.OUTPUT_ADDR + OUTPUT_PTR))
+	if len(data) == 0 {
+		return
+	}
+
+	// Write the data
+	dst := unsafe.Pointer(uintptr(zkvm.OUTPUT_ADDR + 4 + OUTPUT_PTR))
 	src := unsafe.Pointer(&data[0])
 	// Copy the bytes
 	for i := 0; i < len(data); i++ {
 		*(*byte)(unsafe.Add(dst, i)) = *(*byte)(unsafe.Add(src, i))
 	}
 	OUTPUT_PTR += uint64(len(data))
+
+	// Update the count header with total u32 values written so far
+	// OUTPUT_PTR now contains total bytes written (since we write at OUTPUT_ADDR + 4 + OUTPUT_PTR)
+	totalBytes := OUTPUT_PTR
+	numU32s := (totalBytes + 3) / 4 // Round up to nearest u32
+	countPtr := (*uint32)(unsafe.Pointer(uintptr(zkvm.OUTPUT_ADDR)))
+	*countPtr = uint32(numU32s)
 
 	/*
 		TODO: Try the following:
