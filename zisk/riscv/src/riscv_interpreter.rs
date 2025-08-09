@@ -52,9 +52,21 @@ pub fn riscv_interpreter(code: &[u32]) -> Vec<RiscvInstruction> {
         // Get the RISCV instruction
         let inst = *inst_ref;
 
-        // Ignore instructions that are zero
+        // Handle zero instruction as a NOP (addi x0, x0, 0)
         if inst == 0 {
-            println!("riscv_interpreter() found inst=0 at position s={} (index in u32 array)", s);
+            println!("riscv_interpreter() found inst=0 at position s={} (index in u32 array), treating as addi x0, x0, 0", s);
+            // Create an addi x0, x0, 0 instruction (standard RISC-V NOP)
+            let i = RiscvInstruction {
+                rvinst: inst,
+                t: "I".to_string(),
+                inst: "addi".to_string(),
+                rd: 0,   // x0 destination
+                rs1: 0,  // x0 source
+                rs2: 0,
+                imm: 0,  // immediate value 0
+                ..Default::default()
+            };
+            insts.push(i);
             continue;
         }
 
