@@ -1,4 +1,4 @@
-.PHONY: all clean build-tamago build-zisk compile-empty run-empty-emu run-empty-rom
+.PHONY: all clean build-tamago build-zisk compile-empty run-empty-emu run-empty-emu-quiet run-empty-rom setup-empty-rom
 
 TAMAGO_DIR = tamago-go-latest
 TAMAGO_SRC = $(TAMAGO_DIR)/src
