@@ -1,4 +1,4 @@
-.PHONY: all clean build-tamago build-zisk compile-empty run-empty-emu run-empty-emu-quiet run-empty-rom setup-empty-rom
+.PHONY: all clean build-tamago build-zisk compile-empty compile-geth-stateless run-empty-emu run-empty-emu-quiet run-empty-rom setup-empty-rom
 
 TAMAGO_DIR = tamago-go-latest
 TAMAGO_SRC = $(TAMAGO_DIR)/src
@@ -17,7 +17,7 @@ LDFLAGS_INTERNAL = -ldflags="\
 
 # Default to external linking
 LDFLAGS = $(LDFLAGS_EXTERNAL)
-TAGS = -tags tamago,linkcpuinit,linkramstart,linkramsize,linkprintk
+TAGS = -tags tamago,linkcpuinit,linkramstart,linkramsize,linkprintk,tinygo.wasm,tinygo,riscv64
 
 all: build-tamago build-zisk compile-empty run-empty-emu-quiet
 
@@ -36,6 +36,9 @@ clean:
 
 compile-empty:
 	cd tama-programs/empty && CGO_ENABLED=0 GOROOT=$(PWD)/$(TAMAGO_DIR) GOOS=tamago GOARCH=riscv64 ../../$(TAMAGO_BIN)/go build $(GCFLAGS) $(LDFLAGS_INTERNAL) $(TAGS) -o empty.elf .
+
+compile-geth-stateless:
+	cd tama-programs/ethereum-test && CGO_ENABLED=0 GOROOT=$(PWD)/$(TAMAGO_DIR) GOOS=tamago GOARCH=riscv64 ../../$(TAMAGO_BIN)/go build $(GCFLAGS) $(LDFLAGS_INTERNAL) $(TAGS) -o geth-stateless.elf .
 
 run-empty-emu:
 	cd tama-programs/empty && ../../$(ZISKEMU) --elf empty.elf -v -c
