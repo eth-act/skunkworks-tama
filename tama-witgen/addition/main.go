@@ -13,8 +13,7 @@ func main() {
 	y := int64(456)
 
 	// Output file - assumes running from project root
-	// When run from root: go run ./tama-host/empty_witness_generator/main.go
-	output := "tama-programs/empty/witness.bin"
+	output := "tama-programs/addition/witness.bin"
 
 	// Create the witness file
 	file, err := os.Create(output)

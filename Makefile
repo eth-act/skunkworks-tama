@@ -1,4 +1,4 @@
-.PHONY: all clean build-tamago build-zisk compile-empty compile-geth-stateless run-empty-emu run-empty-emu-quiet run-empty-rom setup-empty-rom
+.PHONY: all clean build-tamago build-zisk compile-empty compile-addition compile-geth-stateless run-empty-emu run-empty-emu-quiet run-addition run-addition-verbose run-empty-rom setup-empty-rom
 
 TAMAGO_DIR = tamago-go-latest
 TAMAGO_SRC = $(TAMAGO_DIR)/src
@@ -36,6 +36,13 @@ clean:
 
 compile-empty:
 	cd tama-programs/empty && CGO_ENABLED=0 GOROOT=$(PWD)/$(TAMAGO_DIR) GOOS=tamago GOARCH=riscv64 ../../$(TAMAGO_BIN)/go build $(GCFLAGS) $(LDFLAGS_INTERNAL) $(TAGS) -o empty.elf .
+	@echo "=== Generating witness for empty program ==="
+	go run ./tama-witgen/addition/main.go
+
+compile-addition:
+	cd tama-programs/addition && CGO_ENABLED=0 GOROOT=$(PWD)/$(TAMAGO_DIR) GOOS=tamago GOARCH=riscv64 ../../$(TAMAGO_BIN)/go build $(GCFLAGS) $(LDFLAGS_INTERNAL) $(TAGS) -o addition.elf .
+	@echo "=== Generating witness for addition program ==="
+	go run ./tama-witgen/addition/main.go
 
 compile-geth-stateless:
 	cd tama-programs/ethereum-test && CGO_ENABLED=0 GOROOT=$(PWD)/$(TAMAGO_DIR) GOOS=tamago GOARCH=riscv64 ../../$(TAMAGO_BIN)/go build $(GCFLAGS) $(LDFLAGS_INTERNAL) $(TAGS) -o geth-stateless.elf .
@@ -45,6 +52,12 @@ run-empty-emu:
 
 run-empty-emu-quiet:
 	cd tama-programs/empty && ../../$(ZISKEMU) --elf empty.elf -c
+
+run-addition:
+	cd tama-programs/addition && ../../$(ZISKEMU) --elf addition.elf -i witness.bin -c
+
+run-addition-verbose:
+	cd tama-programs/addition && ../../$(ZISKEMU) --elf addition.elf -i witness.bin -v -c
 
 run-empty-rom:
 	$(CARGO_ZISK) rom-setup --elf tama-programs/empty/empty.elf
