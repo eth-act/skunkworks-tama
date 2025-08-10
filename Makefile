@@ -62,6 +62,15 @@ run-addition-verbose:
 run-empty-rom:
 	$(CARGO_ZISK) rom-setup --elf tama-programs/empty/empty.elf
 
+run-stateless-rom:
+	$(CARGO_ZISK) rom-setup --elf tama-programs/stateless/stateless.elf -v
+
+run-stateless:
+	cd tama-programs/stateless && ../../$(ZISKEMU) --elf stateless.elf
+
+run-stateless-stats:
+	cd tama-programs/stateless && ../../$(ZISKEMU) --elf stateless.elf -c --stats
+
 # Setup ROM for cargo-zisk run
 .PHONY: setup-empty-rom
 setup-empty-rom: compile-empty
