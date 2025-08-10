@@ -46,6 +46,9 @@ compile-addition:
 
 compile-stateless:
 	cd tama-programs/stateless && CGO_ENABLED=0 GOROOT=$(PWD)/$(TAMAGO_DIR) GOOS=tamago GOARCH=riscv64 ../../$(TAMAGO_BIN)/go build $(GCFLAGS) $(LDFLAGS_INTERNAL) $(TAGS) -o stateless.elf .
+	@echo "=== Generating witness for stateless program ==="
+# 	-mod=read-only can be removed later. Mainly here because geth uses tablewriter 0.0.5 and this repo keeps updating to v1 	
+	cd tama-witgen/stateless && GO111MODULE=on go run -mod=readonly main.go
 
 run-empty-emu:
 	cd tama-programs/empty && ../../$(ZISKEMU) --elf empty.elf -v -c
@@ -66,10 +69,10 @@ run-stateless-rom:
 	$(CARGO_ZISK) rom-setup --elf tama-programs/stateless/stateless.elf -v
 
 run-stateless:
-	cd tama-programs/stateless && ../../$(ZISKEMU) --elf stateless.elf
+	cd tama-programs/stateless && ../../$(ZISKEMU) --elf stateless.elf -i witness.bin -c
 
 run-stateless-stats:
-	cd tama-programs/stateless && ../../$(ZISKEMU) --elf stateless.elf -c --stats
+	cd tama-programs/stateless && ../../$(ZISKEMU) --elf stateless.elf -i witness.bin -c --stats
 
 # Setup ROM for cargo-zisk run
 .PHONY: setup-empty-rom
