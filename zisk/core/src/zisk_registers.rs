@@ -119,3 +119,17 @@ pub const REGS_IN_MAIN_FROM: usize = 1; // First non-zero register in main trace
 pub const REGS_IN_MAIN_TO: usize = 31; // Last non-zero register in main trace
 pub const REGS_IN_MAIN: usize = REGS_IN_MAIN_TO - REGS_IN_MAIN_FROM + 1;
 pub const REGS_IN_MAIN_TOTAL_NUMBER: usize = 32; // Total number of registers in main, including the zero register
+
+// Floating point registers memory allocation (pre-allocated in BIOS)
+pub const FREG_BASE_ADDR: u64 = SYS_ADDR + 0x300; // Right after integer regs + UART + padding
+pub const FREG_SIZE: u64 = 8; // Each FP register is 8 bytes
+
+// Floating point control and status registers (IEEE 754 compliance)
+pub const FRM_ADDR: u64 = SYS_ADDR + 0x400;    // Floating-point rounding mode
+pub const FFLAGS_ADDR: u64 = SYS_ADDR + 0x408; // Floating-point exception flags
+// Note: FCSR is a view: FCSR = (FRM << 5) | FFLAGS (no separate storage needed)
+
+// Helper function to calculate FP register memory address
+pub const fn freg_addr(reg_num: u64) -> u64 {
+    FREG_BASE_ADDR + (reg_num * FREG_SIZE)
+}

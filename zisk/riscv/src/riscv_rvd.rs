@@ -352,5 +352,68 @@ impl Rvd {
             info.op.map.insert(7, RvdOperation { s: String::from("csrrci"), map: HashMap::new() });
             self.opcodes.insert(115, info);
         }
+
+        // Opcode 7 (0x07) - Floating-point load operations  
+        {
+            let info = RvdInfo {
+                t: String::from("I"),
+                op: RvdOperation { s: String::new(), map: HashMap::new() },
+            };
+            self.opcodes.insert(7, info);
+        }
+
+        // Opcode 39 (0x27) - Floating-point store operations
+        {
+            let info = RvdInfo {
+                t: String::from("S"),
+                op: RvdOperation { s: String::new(), map: HashMap::new() },
+            };
+            self.opcodes.insert(39, info);
+        }
+
+        // Opcode 67 (0x43) - FMADD operations
+        {
+            let info = RvdInfo {
+                t: String::from("R4"),
+                op: RvdOperation { s: String::from("fmadd"), map: HashMap::new() },
+            };
+            self.opcodes.insert(67, info);
+        }
+
+        // Opcode 71 (0x47) - FMSUB operations
+        {
+            let info = RvdInfo {
+                t: String::from("R4"),
+                op: RvdOperation { s: String::from("fmsub"), map: HashMap::new() },
+            };
+            self.opcodes.insert(71, info);
+        }
+
+        // Opcode 75 (0x4B) - FNMSUB operations
+        {
+            let info = RvdInfo {
+                t: String::from("R4"),
+                op: RvdOperation { s: String::from("fnmsub"), map: HashMap::new() },
+            };
+            self.opcodes.insert(75, info);
+        }
+
+        // Opcode 79 (0x4F) - FNMADD operations
+        {
+            let info = RvdInfo {
+                t: String::from("R4"),
+                op: RvdOperation { s: String::from("fnmadd"), map: HashMap::new() },
+            };
+            self.opcodes.insert(79, info);
+        }
+
+        // Opcode 83 (0x53) - Floating-point operations
+        {
+            let info = RvdInfo {
+                t: String::from("R"),
+                op: RvdOperation { s: String::new(), map: HashMap::new() },
+            };
+            self.opcodes.insert(83, info);
+        }
     }
 }

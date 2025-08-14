@@ -15,7 +15,7 @@ func Init(arch *ssagen.ArchInfo) {
 	arch.REGSP = riscv.REG_SP
 	arch.MAXWIDTH = 1 << 50
 
-	arch.SoftFloat = true
+	// arch.SoftFloat = true
 
 	arch.Ginsnop = ginsnop
 	arch.ZeroRange = zeroRange

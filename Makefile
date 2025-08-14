@@ -10,7 +10,8 @@ ZISKEMU = $(ZISK_DIR)/target/debug/ziskemu
 CARGO_ZISK = $(ZISK_DIR)/target/debug/cargo-zisk
 
 # Compilation flags for TamaGo
-GCFLAGS = -gcflags="all=-d=softfloat"
+# GCFLAGS = -gcflags="all=-d=softfloat"
+GCFLAGS = -gcflags=""
 
 LDFLAGS_INTERNAL = -ldflags="\
        -T 0x80001000 -D 0xa0020000"
@@ -50,6 +51,12 @@ compile-stateless:
 # 	-mod=read-only can be removed later. Mainly here because geth uses tablewriter 0.0.5 and this repo keeps updating to v1 	
 	cd tama-witgen/stateless && GO111MODULE=on go run -mod=readonly main.go
 
+compile-float:
+	cd tama-programs/float && CGO_ENABLED=0 GOROOT=$(PWD)/$(TAMAGO_DIR) GOOS=tamago GOARCH=riscv64 ../../$(TAMAGO_BIN)/go build $(GCFLAGS) $(LDFLAGS_INTERNAL) $(TAGS) -o float.elf .
+
+compile-float-asm:
+	cd tama-programs/float-asm && make test.elf
+
 run-empty-emu:
 	cd tama-programs/empty && ../../$(ZISKEMU) --elf empty.elf -v -c
 
@@ -73,6 +80,15 @@ run-stateless:
 
 run-stateless-stats:
 	cd tama-programs/stateless && ../../$(ZISKEMU) --elf stateless.elf -i witness.bin -c --stats
+
+run-float-emu:
+	cd tama-programs/float && ../../$(ZISKEMU) --elf float.elf -c
+
+run-float-asm-emu:
+	cd tama-programs/float-asm && ../../$(ZISKEMU) --elf test.elf -c
+
+run-float-rom:
+	$(CARGO_ZISK) rom-setup --elf tama-programs/float/float.elf
 
 # Setup ROM for cargo-zisk run
 .PHONY: setup-empty-rom

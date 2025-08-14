@@ -6,8 +6,9 @@ use riscv::{riscv_interpreter, RiscvInstruction};
 
 use crate::{
     convert_vector, ZiskInstBuilder, ZiskRom, ARCH_ID_ZISK, INPUT_ADDR, OUTPUT_ADDR, ROM_ENTRY,
-    ROM_EXIT, SYS_ADDR,
+    ROM_EXIT, SYS_ADDR, FREG_BASE_ADDR, FREG_SIZE, FRM_ADDR, FFLAGS_ADDR, ROM_ADDR,
 };
+use crate::softfloat::FRM_RNE;
 
 use std::collections::HashMap;
 // The CSR precompiled addresses are defined in the `ZiskOS` `ziskos/entrypoint/src` files
@@ -39,6 +40,13 @@ const CSR_FCALL_PARAM_OFFSET_TO_WORDS: [u64; 16] =
 const CAUSE_EXIT: u64 = 93;
 const CSR_ADDR: u64 = SYS_ADDR + 0x8000;
 const MTVEC: u64 = CSR_ADDR + 0x305;
+const FP32_ADD_ADDR: u64 = CSR_ADDR + 0x500;  // Address where fp32_add subroutine address is stored
+const FP32_SUB_ADDR: u64 = CSR_ADDR + 0x508;  // Address where fp32_sub subroutine address is stored  
+const FP32_MUL_ADDR: u64 = CSR_ADDR + 0x510;  // Address where fp32_mul subroutine address is stored
+
+// Floating-point subroutines area (in the gap between BIOS and main program)
+const FP_SUBROUTINES_ADDR: u64 = 0x2000; // After BIOS area, before ROM_ADDR
+
 const M64: u64 = 0xFFFFFFFFFFFFFFFF;
 
 /// Context to store the list of converted ZisK instructions, including their program address and a
@@ -163,6 +171,41 @@ impl Riscv2ZiskContext<'_> {
             "csrrwi" => self.csrrwi(riscv_instruction),
             "csrrsi" => self.csrrsi(riscv_instruction),
             "csrrci" => self.csrrci(riscv_instruction),
+            
+            // Floating point arithmetic operations using IEEE 754 softfloat
+            "fadd.s" => self.create_freg_op(riscv_instruction, "fadd.s"),
+            "fadd.d" => self.create_freg_op(riscv_instruction, "fadd.d"),
+            "fsub.s" => self.create_freg_op(riscv_instruction, "fsub.s"),
+            "fsub.d" => self.create_freg_op(riscv_instruction, "fsub.d"),
+            "fmul.s" => self.create_freg_op(riscv_instruction, "fmul.s"),
+            "fmul.d" => self.create_freg_op(riscv_instruction, "fmul.d"),
+            
+            // Floating point load operations
+            // TODO: Check correctness; ie that we can use copyb for floats
+            "flw" => self.create_freg_load_op(riscv_instruction, "copyb", 4),     // Load 32-bit single precision
+            "fld" => self.create_freg_load_op(riscv_instruction, "copyb", 8),     // Load 64-bit double precision
+            
+            // Floating point store operations  
+            // TODO: Check correctness; ie that we can use copyb for floats
+            "fsw" => self.create_freg_store_op(riscv_instruction, "copyb", 4),    // Store 32-bit single precision
+            "fsd" => self.create_freg_store_op(riscv_instruction, "copyb", 8),    // Store 64-bit double precision
+            
+            // Floating point move operations
+            // TODO: Check correctness; ie that we can use copyb for floats
+            "fmv.s" => self.create_freg_op(riscv_instruction, "copyb"),           // Move single precision
+            "fmv.d" => self.create_freg_op(riscv_instruction, "copyb"),           // Move double precision
+            
+            // Fused multiply-add operations (simplified to just addition for now)
+            "fmadd" => self.create_freg_op(riscv_instruction, "add"),
+            "fmsub" => self.create_freg_op(riscv_instruction, "sub"),
+            "fnmsub" => self.create_freg_op(riscv_instruction, "sub"),
+            "fnmadd" => self.create_freg_op(riscv_instruction, "add"),
+            
+            // Handle unknown floating-point instructions by treating them as NOPs for now
+            inst if inst.starts_with("f_unknown_") || inst.starts_with("fl_unknown_") || inst.starts_with("fs_unknown_") => {
+                self.nop(riscv_instruction)
+            },
+            
             _ => panic!(
                 "Riscv2ZiskContext::convert() found invalid riscv_instruction.inst={}",
                 riscv_instruction.inst
@@ -365,6 +408,166 @@ impl Riscv2ZiskContext<'_> {
         zib.store("reg", i.rd as i64, false, false);
         zib.j(4, 4);
         zib.verbose(&format!("{} r{}, r{}, r{}", i.inst, i.rd, i.rs1, i.rs2));
+        zib.build();
+        self.insts.insert(self.s, zib);
+        self.s += 4;
+    }
+
+    /// Creates a Zisk operation that implements a RISC-V floating point register operation
+    /// Calls softfloat module to emit the appropriate Zisk instruction sequence
+    pub fn create_freg_op(&mut self, i: &RiscvInstruction, fp_op: &str) {
+        // Use our softfloat module to emit the appropriate instruction sequence
+        match fp_op {
+            "fadd.s" => {
+                crate::softfloat::emit_fp32_add(&mut self.insts, &mut self.s, i.rs1, i.rs2, i.rd);
+            },
+            "fadd.d" => {
+                todo!();
+                crate::softfloat::emit_fp64_add(&mut self.insts, &mut self.s, i.rs1, i.rs2, i.rd);
+            },
+            "fsub.s" => {
+                todo!();
+                crate::softfloat::emit_fp32_sub(&mut self.insts, &mut self.s, i.rs1, i.rs2, i.rd);
+            },
+            "fsub.d" => {
+                todo!();
+                crate::softfloat::emit_fp64_sub(&mut self.insts, &mut self.s, i.rs1, i.rs2, i.rd);
+            },
+            "fmul.s" => {
+                todo!();
+                crate::softfloat::emit_fp32_mul(&mut self.insts, &mut self.s, i.rs1, i.rs2, i.rd);
+            },
+            "fmul.d" => {
+                todo!();
+                crate::softfloat::emit_fp64_mul(&mut self.insts, &mut self.s, i.rs1, i.rs2, i.rd);
+            },
+            _ => {
+                todo!();
+                // For unknown FP operations, just do a simple copy for now
+                let mut zib = ZiskInstBuilder::new(self.s);
+                zib.src_a("imm", 0, false);
+                zib.src_b("imm", 0, false);
+                zib.op("copyb").unwrap();
+                zib.store("mem", (FREG_BASE_ADDR + (i.rd as u64 * FREG_SIZE)) as i64, false, false);
+                zib.j(4, 4);
+                zib.verbose(&format!("unknown_fp_op: {}", fp_op));
+                zib.build();
+                self.insts.insert(self.s, zib);
+                self.s += 4;
+            }
+        }
+    }
+
+    /// Creates a call to a floating-point ROM subroutine
+    pub fn create_fp_call(&mut self, i: &RiscvInstruction, subroutine_addr_location: u64) {
+        let f1_addr = FREG_BASE_ADDR + (i.rs1 as u64 * FREG_SIZE);
+        let f2_addr = FREG_BASE_ADDR + (i.rs2 as u64 * FREG_SIZE);
+        let fd_addr = FREG_BASE_ADDR + (i.rd as u64 * FREG_SIZE);
+        
+        println!("DEBUG: create_fp_call - rs1={}, rs2={}, rd={}", i.rs1, i.rs2, i.rd);
+        println!("DEBUG: create_fp_call - f1_addr=0x{:x}, f2_addr=0x{:x}, fd_addr=0x{:x}", f1_addr, f2_addr, fd_addr);
+        println!("DEBUG: create_fp_call - subroutine_addr_location=0x{:x}", subroutine_addr_location);
+        println!("DEBUG: create_fp_call - current PC: 0x{:x}", self.s);
+        
+        // Load first operand value from FP register into r30
+        {
+            println!("DEBUG: Generating load f{} instruction at PC: 0x{:x}", i.rs1, self.s);
+            let mut zib = ZiskInstBuilder::new(self.s);
+            zib.src_a("imm", 0, false);
+            zib.src_b("mem", f1_addr, false);
+            zib.op("copyb").unwrap();
+            zib.store("reg", 30, false, false);
+            zib.j(4, 4);  // Standard pattern
+            zib.verbose(&format!("fp_call: load f{} value to r30", i.rs1));
+            zib.build();
+            self.insts.insert(self.s, zib);
+            println!("DEBUG: Inserted load f{} instruction at PC: 0x{:x}", i.rs1, self.s);
+            self.s += 4;  // Standard increment
+        }
+        
+        // Load second operand value from FP register into r31
+        {
+            let mut zib = ZiskInstBuilder::new(self.s);
+            zib.src_a("imm", 0, false);
+            zib.src_b("mem", f2_addr, false);
+            zib.op("copyb").unwrap();
+            zib.store("reg", 31, false, false);
+            zib.j(4, 4);  // Standard pattern
+            zib.verbose(&format!("fp_call: load f{} value to r31", i.rs2));
+            zib.build();
+            self.insts.insert(self.s, zib);
+            self.s += 4;  // Standard increment
+        }
+        
+        // Call the floating-point subroutine
+        {
+            let mut zib = ZiskInstBuilder::new(self.s);
+            zib.src_a("imm", 0, false);
+            zib.src_b("mem", subroutine_addr_location, false);
+            zib.op("copyb").unwrap();
+            zib.store_ra("reg", 1, false);  // Store return address
+            zib.set_pc();
+            zib.j(0, 4);  // Standard pattern like ecall
+            zib.verbose(&format!("fp_call: call subroutine"));
+            zib.build();
+            self.insts.insert(self.s, zib);
+            self.s += 4;  // Standard increment like other calls
+        }
+        
+        // Store result from r32 back to destination FP register  
+        {
+            let mut zib = ZiskInstBuilder::new(self.s);
+            zib.src_a("imm", 0, false);
+            zib.src_b("reg", 32, false);
+            zib.op("copyb").unwrap();
+            zib.store("mem", fd_addr as i64, false, false);
+            zib.j(4, 4);  // Standard pattern
+            zib.verbose(&format!("fp_call: store result to f{}", i.rd));
+            zib.build();
+            self.insts.insert(self.s, zib);
+            self.s += 4;  // Standard increment
+        }
+    }
+
+    /// Creates a Zisk operation that loads from memory to a floating point register
+    /// flw fd, offset(rs1) - load word (32-bit) to FP register
+    /// fld fd, offset(rs1) - load double (64-bit) to FP register
+    pub fn create_freg_load_op(&mut self, i: &RiscvInstruction, op: &str, width: u64) {
+        let mut zib = ZiskInstBuilder::new(self.s);
+        
+        // Calculate FP register address
+        let fd_addr = FREG_BASE_ADDR + (i.rd as u64 * FREG_SIZE);
+        
+        // Load from memory: rs1 + immediate offset
+        zib.src_a("reg", i.rs1 as u64, false);
+        zib.ind_width(width);
+        zib.src_b("ind", i.imm as u64, false);
+        zib.op(op).unwrap();
+        zib.store("mem", fd_addr as i64, false, false);
+        zib.j(4, 4);
+        zib.verbose(&format!("{} f{}, {}(r{})", i.inst, i.rd, i.imm, i.rs1));
+        zib.build();
+        self.insts.insert(self.s, zib);
+        self.s += 4;
+    }
+
+    /// Creates a Zisk operation that stores from a floating point register to memory
+    /// fsw rs2, offset(rs1) - store word (32-bit) from FP register  
+    /// fsd rs2, offset(rs1) - store double (64-bit) from FP register
+    pub fn create_freg_store_op(&mut self, i: &RiscvInstruction, op: &str, width: u64) {
+        let mut zib = ZiskInstBuilder::new(self.s);
+        
+        // Calculate FP register address
+        let fs2_addr = FREG_BASE_ADDR + (i.rs2 as u64 * FREG_SIZE);
+        
+        // Store to memory: rs1 + immediate offset
+        zib.src_a("reg", i.rs1 as u64, false);
+        zib.src_b("mem", fs2_addr, false);
+        zib.op(op).unwrap();
+        zib.ind_width(width);
+        zib.store("ind", i.imm as i64, false, false);
+        zib.j(4, 4);
+        zib.verbose(&format!("{} f{}, {}(r{})", i.inst, i.rs2, i.imm, i.rs1));
         zib.build();
         self.insts.insert(self.s, zib);
         self.s += 4;
@@ -1519,13 +1722,91 @@ pub fn add_zisk_init_data(rom: &mut ZiskRom, addr: u64, data: &[u8], force_align
     }
 }
 
+/// Add floating-point subroutines to ROM
+pub fn add_fp_subroutines(rom: &mut ZiskRom) -> (u64, u64, u64) {
+    println!("DEBUG: add_fp_subroutines START - next_init_inst_addr: 0x{:x}", rom.next_init_inst_addr);
+    
+    // Add fp32_add subroutine that reads parameters from registers 30, 31, 32
+    let fp32_add_addr = rom.next_init_inst_addr;
+    println!("DEBUG: fp32_add_addr set to: 0x{:x}", fp32_add_addr);
+    
+    let before_subroutine = rom.next_init_inst_addr;
+    crate::softfloat::emit_fp32_add_subroutine(&mut rom.insts, &mut rom.next_init_inst_addr);
+    let after_subroutine = rom.next_init_inst_addr;
+    println!("DEBUG: After emit_fp32_add_subroutine - before: 0x{:x}, after: 0x{:x}, generated: {} instructions", 
+             before_subroutine, after_subroutine, (after_subroutine - before_subroutine) / 4);
+
+    // Add return instruction for fp32_add
+    {
+        let mut zib = ZiskInstBuilder::new(rom.next_init_inst_addr);
+        zib.src_a("imm", 0, false);
+        zib.src_b("reg", 1, false);  // Return address from jal
+        zib.op("copyb").unwrap();
+        zib.set_pc();
+        zib.j(0, 4);
+        zib.verbose("fp32_add: return");
+        zib.build();
+        rom.insts.insert(rom.next_init_inst_addr, zib);
+        rom.next_init_inst_addr += 4;
+    }
+    
+    println!("DEBUG: add_fp_subroutines END - next_init_inst_addr: 0x{:x}", rom.next_init_inst_addr);
+    
+    // Placeholder addresses for other FP operations (to be implemented)
+    let fp32_sub_addr = rom.next_init_inst_addr;
+    let fp32_mul_addr = rom.next_init_inst_addr;
+    
+    (fp32_add_addr, fp32_sub_addr, fp32_mul_addr)
+}
+
 /// Add the entry/exit jump program section to the rom instruction set.
 pub fn add_entry_exit_jmp(rom: &mut ZiskRom, addr: u64) {
     //print!("add_entry_exit_jmp() rom.next_init_inst_addr={}\n", rom.next_init_inst_addr);
 
+    // Reserve space for floating-point subroutines by jumping over them first
+    let jump_over_subroutines_addr = rom.next_init_inst_addr;
+    
+    // We'll come back and fix this jump offset after we know how big the subroutines are
+    // For now, reserve space for the jump instruction
+    rom.next_init_inst_addr += 4;
+    
+    // Add floating-point subroutines right after the jump (they won't execute sequentially)
+    println!("DEBUG: Adding FP subroutines at: 0x{:x}", rom.next_init_inst_addr);
+    let (fp32_add_addr, _fp32_sub_addr, _fp32_mul_addr) = add_fp_subroutines(rom);
+    println!("DEBUG: FP subroutines end at: 0x{:x}", rom.next_init_inst_addr);
+    
+    // Now add the jump instruction to skip over the subroutines
+    let bios_start_addr = rom.next_init_inst_addr;
+    let jump_offset = bios_start_addr - jump_over_subroutines_addr;
+    println!("DEBUG: Jump offset calculation - from: 0x{:x}, to: 0x{:x}, offset: {} bytes ({} instructions)", 
+             jump_over_subroutines_addr, bios_start_addr, jump_offset, jump_offset / 4);
+    {
+        let mut zib = ZiskInstBuilder::new(jump_over_subroutines_addr);
+        zib.src_a("imm", 0, false);
+        zib.src_b("imm", 0, false);
+        zib.op("copyb").unwrap();
+        zib.j(jump_offset as i32, jump_offset as i32);
+        zib.verbose(&format!("Jump over FP subroutines (offset: {})", jump_offset));
+        zib.build();
+        rom.insts.insert(jump_over_subroutines_addr, zib);
+    }
+    
+    // Store FP subroutine addresses in memory for later use
+    {
+        let mut zib = ZiskInstBuilder::new(rom.next_init_inst_addr);
+        zib.src_a("imm", 0, false);
+        zib.src_b("imm", fp32_add_addr, false);
+        zib.op("copyb").unwrap();
+        zib.store("mem", FP32_ADD_ADDR as i64, false, false);
+        zib.j(4, 4);
+        zib.verbose(&format!("Store fp32_add addr: 0x{:x}", fp32_add_addr));
+        zib.build();
+        rom.insts.insert(rom.next_init_inst_addr, zib);
+        rom.next_init_inst_addr += 4;
+    }
+
     // Calculate the trap handler rom pc address as an offset from the current instruction address
-    // to the beginning of the ecall section
-    let trap_handler: u64 = rom.next_init_inst_addr + 0x38;
+    let trap_handler: u64 = rom.next_init_inst_addr + 0x38 + (32 * 4) + (2 * 4);
 
     // :0000 we note the rom pc address offset from the first address for each instruction
     // Store the Zisk architecture ID into memory
@@ -1553,7 +1834,53 @@ pub fn add_entry_exit_jmp(rom: &mut ZiskRom, addr: u64) {
     rom.insts.insert(rom.next_init_inst_addr, zib);
     rom.next_init_inst_addr += 4;
 
-    // :0008
+    // Floating-point subroutines will be added after all initialization is complete
+
+    // Initialize floating point registers f0-f31 to 0.0 in memory
+    for i in 0..32_u64 {
+        let mut zib = ZiskInstBuilder::new(rom.next_init_inst_addr);
+        zib.src_a("imm", 0, false);
+        zib.src_b("imm", 0, false);  // Initialize to 0.0
+        zib.op("copyb").unwrap();
+        zib.store("mem", (FREG_BASE_ADDR + (i * FREG_SIZE)) as i64, false, false);
+        zib.j(4, 4);
+        zib.verbose(&format!("Initialize f{} at 0x{:x}", i, FREG_BASE_ADDR + (i * FREG_SIZE)));
+        zib.build();
+        rom.insts.insert(rom.next_init_inst_addr, zib);
+        rom.next_init_inst_addr += 4;
+    }
+
+    // Initialize floating-point control and status registers
+    
+    // Initialize FRM (rounding mode) to RNE (Round to Nearest, ties to Even)
+    {
+        let mut zib = ZiskInstBuilder::new(rom.next_init_inst_addr);
+        zib.src_a("imm", 0, false);
+        zib.src_b("imm", FRM_RNE, false);
+        zib.op("copyb").unwrap();
+        zib.store("mem", FRM_ADDR as i64, false, false);
+        zib.j(4, 4);
+        zib.verbose(&format!("Initialize FRM to RNE at 0x{:x}", FRM_ADDR));
+        zib.build();
+        rom.insts.insert(rom.next_init_inst_addr, zib);
+        rom.next_init_inst_addr += 4;
+    }
+
+    // Initialize FFLAGS (exception flags) to 0 (no exceptions)
+    {
+        let mut zib = ZiskInstBuilder::new(rom.next_init_inst_addr);
+        zib.src_a("imm", 0, false);
+        zib.src_b("imm", 0, false);
+        zib.op("copyb").unwrap();
+        zib.store("mem", FFLAGS_ADDR as i64, false, false);
+        zib.j(4, 4);
+        zib.verbose(&format!("Initialize FFLAGS to 0 at 0x{:x}", FFLAGS_ADDR));
+        zib.build();
+        rom.insts.insert(rom.next_init_inst_addr, zib);
+        rom.next_init_inst_addr += 4;
+    }
+
+
     // Store the input data address into register #10
     let mut zib = ZiskInstBuilder::new(rom.next_init_inst_addr);
     zib.src_a("imm", 0, false);

@@ -59,6 +59,7 @@ pub mod inst_context;
 pub mod mem;
 pub mod riscv2zisk;
 pub mod riscv2zisk_context;
+pub mod softfloat;
 mod utils;
 pub mod zisk_definitions;
 pub mod zisk_inst;

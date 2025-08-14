@@ -41,12 +41,14 @@ pub struct RiscvInstruction {
     /// Instruction type
     pub t: String,
 
+    pub funct2: u32,
     pub funct3: u32,
     pub funct5: u32,
     pub funct7: u32,
     pub rd: u32,
     pub rs1: u32,
     pub rs2: u32,
+    pub rs3: u32,
     pub imm: i32,
     pub imme: u32,
     pub inst: String,
@@ -66,6 +68,9 @@ impl RiscvInstruction {
         if self.rvinst != 0 {
             s += &(" rvinst=".to_string() + &self.rvinst.to_string());
         }
+        if self.funct2 != 0 {
+            s += &(" funct2=".to_string() + &self.funct2.to_string());
+        }
         if self.funct3 != 0 {
             s += &(" funct3=".to_string() + &self.funct3.to_string());
         }
@@ -83,6 +88,9 @@ impl RiscvInstruction {
         }
         if self.rs2 != 0 {
             s += &(" rs2=".to_string() + &self.rs2.to_string());
+        }
+        if self.rs3 != 0 {
+            s += &(" rs3=".to_string() + &self.rs3.to_string());
         }
         if self.imm != 0 {
             s += &(" imm=".to_string() + &self.imm.to_string());

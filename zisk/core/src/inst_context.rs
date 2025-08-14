@@ -134,3 +134,20 @@ impl Default for InstContext {
         Self::new()
     }
 }
+
+#[cfg(test)]
+mod tests {
+    #[test]
+    fn smoke_test_floating_point_memory_layout() {
+        use crate::{freg_addr, FREG_BASE_ADDR, FREG_SIZE};
+
+        // Test FP register address calculation
+        assert_eq!(freg_addr(0), FREG_BASE_ADDR);
+        assert_eq!(freg_addr(1), FREG_BASE_ADDR + FREG_SIZE);
+        assert_eq!(freg_addr(31), FREG_BASE_ADDR + (31 * FREG_SIZE));
+
+        // Test address spacing
+        assert_eq!(freg_addr(1) - freg_addr(0), FREG_SIZE);
+        assert_eq!(freg_addr(2) - freg_addr(1), FREG_SIZE);
+    }
+}

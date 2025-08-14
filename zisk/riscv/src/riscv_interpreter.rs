@@ -97,7 +97,12 @@ pub fn riscv_interpreter(code: &[u32]) -> Vec<RiscvInstruction> {
             i.imm = signext((inst & 0xFFF00000) >> 20, 12);
             let l: i32;
             (i.inst, l) = getinst(&inf.op, i.funct3, funct7);
-            assert!(!i.inst.is_empty());
+            // Handle floating-point load instructions that don't have specific mappings
+            if i.inst.is_empty() && opcode == 7 {
+                i.inst = if i.funct3 == 2 { "flw".to_string() } else if i.funct3 == 3 { "fld".to_string() } else { format!("fl_unknown_{}", i.funct3) };
+            } else {
+                assert!(!i.inst.is_empty());
+            }
             if l == 2 {
                 i.imm &= 0x3F;
                 i.funct7 = funct7;
@@ -112,7 +117,29 @@ pub fn riscv_interpreter(code: &[u32]) -> Vec<RiscvInstruction> {
             i.rs2 = (inst & 0x1F00000) >> 20;
             i.funct7 = (inst & 0xFE000000) >> 25;
             (i.inst, _) = getinst(&inf.op, i.funct3, i.funct7);
-            assert!(!i.inst.is_empty());
+            // Handle floating-point instructions that don't have specific mappings
+            if i.inst.is_empty() {
+                if opcode == 7 {
+                    // Floating-point load instructions
+                    i.inst = if i.funct3 == 2 { "flw".to_string() } else if i.funct3 == 3 { "fld".to_string() } else { format!("fl_unknown_{}", i.funct3) };
+                } else if opcode == 39 {
+                    // Floating-point store instructions  
+                    i.inst = if i.funct3 == 2 { "fsw".to_string() } else if i.funct3 == 3 { "fsd".to_string() } else { format!("fs_unknown_{}", i.funct3) };
+                } else if opcode == 83 {
+                    // Floating-point arithmetic instructions
+                    i.inst = match i.funct7 {
+                        0 => "fadd.s".to_string(),
+                        1 => "fadd.d".to_string(), 
+                        4 => "fsub.s".to_string(),
+                        5 => "fsub.d".to_string(),
+                        8 => "fmul.s".to_string(),
+                        9 => "fmul.d".to_string(),
+                        _ => format!("f_unknown_{}_{}", i.funct7, i.funct3),
+                    };
+                } else {
+                    assert!(!i.inst.is_empty());
+                }
+            }
         }
         //  31 30 ... 26 25 24 ... 20 19 ... 15 14 13 12 11 10 09 08 07 06 05 04 03 02 01 00
         // |  imm[11:5]    |  rs2    |   rs1   | funct3 |   imm[4:0]   |       opcode       | S-type
@@ -124,7 +151,12 @@ pub fn riscv_interpreter(code: &[u32]) -> Vec<RiscvInstruction> {
             let imm11_5 = (inst & 0xFE000000) >> 25;
             i.imm = signext((imm11_5 << 5) | imm4_0, 12);
             (i.inst, _) = getinst(&inf.op, i.funct3, 0);
-            assert!(!i.inst.is_empty());
+            // Handle floating-point store instructions that don't have specific mappings
+            if i.inst.is_empty() && opcode == 39 {
+                i.inst = if i.funct3 == 2 { "fsw".to_string() } else if i.funct3 == 3 { "fsd".to_string() } else { format!("fs_unknown_{}", i.funct3) };
+            } else {
+                assert!(!i.inst.is_empty());
+            }
         }
         //  31 30 29 28 27 26 25 24...20 19...15 14 13 12 11 10 09 08 07 06 05 04 03 02 01 00
         // |12|    imm[10:5]    |  rs2  | rs1   | funct3 |imm[4:1]   |11|       opcode       | B-type
@@ -209,6 +241,17 @@ pub fn riscv_interpreter(code: &[u32]) -> Vec<RiscvInstruction> {
             } else {
                 panic!("Invalid opcode={opcode} at line s={s}");
             }
+        } else if i.t == *"R4" {
+            // R4-type: 4-register format for fused multiply-add operations
+            i.funct3 = (inst & 0x7000) >> 12;  // rm field (rounding mode)
+            i.rd = (inst & 0xF80) >> 7;
+            i.rs1 = (inst & 0xF8000) >> 15;
+            i.rs2 = (inst & 0x1F00000) >> 20;
+            // rs3 is in bits 31:27
+            i.rs3 = (inst & 0xF8000000) >> 27;
+            i.funct2 = (inst & 0x06000000) >> 25;  // funct2 field
+            // For R4 instructions, use the base instruction name from the operation
+            i.inst = inf.op.s.clone();
         } else {
             panic!("Invalid i.t={} at line s={}", i.t, s);
         }
