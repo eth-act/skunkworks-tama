@@ -15,10 +15,15 @@ GOOS=linux GOARCH=riscv64 CGO_ENABLED=0 go build -ldflags="-s -w" -o stateless-r
 Then strace:
 - for host:
 
+Use "-f" option to follow threads.
+
 ```
-cat witness.bin | strace ./stateless-host 2> strace_host
+cat witness.bin | strace -f ./stateless-host 2> strace_host
 ```
 - for RISCV:
+
+Following threads is not possible with qemu.
+
 ```
 cat witness.bin | qemu-riscv64 -strace ./stateless-riscv64 2> strace_riscv
 ```
