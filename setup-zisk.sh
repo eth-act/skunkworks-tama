@@ -2,8 +2,8 @@
 set -e
 
 # Configuration
-ZISK_REPO="https://github.com/0xPolygonHermez/zisk.git"
-ZISK_BRANCH="feature/float_riscv_instructions"
+ZISK_REPO="https://github.com/kevaundray/zisk.git"
+ZISK_BRANCH="kw/embed-softfloat"
 ZISK_DIR="zisk"
 
 echo "=== Setting up ZisK ==="
