@@ -11,7 +11,6 @@ echo "=== Setting up ZisK ==="
 # Check if zisk directory already exists
 if [ -d "$ZISK_DIR" ]; then
     echo "ZisK directory already exists at $ZISK_DIR"
-    echo "Checking if it's a git repository..."
 
     if [ -d "$ZISK_DIR/.git" ]; then
         echo "Updating existing ZisK repository..."
@@ -21,9 +20,7 @@ if [ -d "$ZISK_DIR" ]; then
         git pull origin "$ZISK_BRANCH"
         cd ..
     else
-        echo "ERROR: $ZISK_DIR exists but is not a git repository"
-        echo "Please remove it manually and run this script again"
-        exit 1
+        echo "ZisK directory exists (not a git repo), skipping setup..."
     fi
 else
     echo "Cloning ZisK repository..."
@@ -31,5 +28,7 @@ else
 fi
 
 echo "=== ZisK setup complete ==="
-echo "Branch: $ZISK_BRANCH"
-cd "$ZISK_DIR" && git log -1 --oneline && cd ..
+if [ -d "$ZISK_DIR/.git" ]; then
+    echo "Branch: $ZISK_BRANCH"
+    cd "$ZISK_DIR" && git log -1 --oneline && cd ..
+fi
