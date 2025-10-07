@@ -1,4 +1,4 @@
-.PHONY: all clean build-tamago build-zisk compile-empty compile-addition compile-geth-stateless run-empty-emu run-empty-emu-quiet run-addition run-addition-verbose run-empty-rom setup-empty-rom
+.PHONY: all clean build-tamago build-zisk setup-zisk compile-empty compile-addition compile-geth-stateless run-empty-emu run-empty-emu-quiet run-addition run-addition-verbose run-empty-rom setup-empty-rom
 
 TAMAGO_DIR = tamago-go-latest
 TAMAGO_SRC = $(TAMAGO_DIR)/src
@@ -20,6 +20,9 @@ LDFLAGS = $(LDFLAGS_EXTERNAL)
 TAGS = -tags tamago,linkcpuinit,linkramstart,linkramsize,linkprintk,tinygo.wasm,tinygo,riscv64
 
 all: build-tamago build-zisk compile-empty run-empty-emu-quiet
+
+setup-zisk:
+	@./setup-zisk.sh
 
 build-tamago:
 	cd $(TAMAGO_SRC) && ./make.bash
