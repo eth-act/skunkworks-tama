@@ -11,13 +11,14 @@
 
 ### First Time Setup
 
-The ZisK emulator is downloaded automatically during the build process. You can also set it up manually:
+Both TamaGo and ZisK are downloaded automatically during the build process. You can also set them up manually:
 
 ```bash
+./setup-tamago.sh
 ./setup-zisk.sh
 ```
 
-To use a different branch or tag, edit `setup-zisk.sh` and change the `ZISK_BRANCH` variable.
+To use a different branch or tag, edit the respective setup script and change the branch variable.
 
 ### Build Everything
 ```bash
@@ -25,18 +26,24 @@ make
 ```
 
 This will:
-1. Download/update ZisK emulator (if needed)
-2. Build TamaGo
-3. Build the emulator
+1. Download/update TamaGo compiler (if needed)
+2. Download/update ZisK emulator (if needed)
+3. Build TamaGo
+4. Build the emulator
 
 ### Build Components Individually
+
+Setup TamaGo compiler:
+```bash
+make setup-tamago
+```
 
 Setup ZisK emulator:
 ```bash
 make setup-zisk
 ```
 
-Build only TamaGo:
+Build only TamaGo (automatically runs setup):
 ```bash
 make build-tamago
 ```
@@ -48,11 +55,12 @@ make build-zisk
 
 ## Project Structure
 
-- `tamago-go-latest/` - TamaGo compiler (modified for softfloat support)
-- `zisk/` - ZisK emulator (downloaded from https://github.com/0xPolygonHermez/zisk)
+- `tamago-go-latest/` - TamaGo compiler (downloaded from https://github.com/eth-act/tamago-go, branch: zkvm-develop)
+- `zisk/` - ZisK emulator (downloaded from https://github.com/kevaundray/zisk, branch: kw/embed-softfloat)
 - `tamaboards/zkvm/` - Board support package
 - `tama-programs/` - Example programs
   - `empty/` - Minimal "Hello World" program
+- `setup-tamago.sh` - Script to download/update TamaGo compiler
 - `setup-zisk.sh` - Script to download/update ZisK emulator
 
 ## Running Programs
