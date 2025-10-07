@@ -1,6 +1,12 @@
 #ifndef __MEM_CONFIG_HPP__
 #define __MEM_CONFIG_HPP__
 
+#define ROM_ADDR 0x80000000
+#define INPUT_ADDR 0x90000000
+#define RAM_ADDR 0xA0000000
+
+#define CHUNK_SIZE_BITS 18
+#define CHUNK_SIZE (1 << CHUNK_SIZE_BITS)
 #define MAX_LOCATORS 2048
 #define MAX_MEM_PLANNERS 8
 #define USE_ADDR_COUNT_TABLE
@@ -22,9 +28,9 @@
 #define ROM_ROWS (1 << 21)
 #define INPUT_ROWS (1 << 21)
 #define MEM_ROWS (1 << 22)
-#define MEM_ALIGN_ROWS (1 << 22)
 #define MAX_CHUNKS 8192     // 2^13 * 2^18 = 2^31
 
+// THREAD_BITS >= 1
 #define THREAD_BITS 2
 #define ADDR_LOW_BITS (THREAD_BITS + 3)
 #define MAX_THREADS (1 << THREAD_BITS)
@@ -48,5 +54,8 @@
 
 #define NO_CHUNK_ID 0xFFFFFFFF
 #define EMPTY_PAGE 0xFFFFFFFF
+
+#define MEM_WRITE_FLAG 0x10
+#define MEM_WRITE_BYTE_CLEAR_FLAG 0x20
 
 #endif

@@ -41,12 +41,14 @@ pub struct RiscvInstruction {
     /// Instruction type
     pub t: String,
 
+    pub funct2: u32,
     pub funct3: u32,
     pub funct5: u32,
     pub funct7: u32,
     pub rd: u32,
     pub rs1: u32,
     pub rs2: u32,
+    pub rs3: u32,
     pub imm: i32,
     pub imme: u32,
     pub inst: String,
@@ -58,6 +60,34 @@ pub struct RiscvInstruction {
 }
 
 impl RiscvInstruction {
+    /// Creates a NOP instruction (ADDI x0, x0, 0)
+    pub fn nop(rvinst: u32) -> Self {
+        Self {
+            rvinst,
+            t: "I".to_string(),
+            inst: "addi".to_string(),
+            rd: 0,
+            rs1: 0,
+            rs2: 0,
+            imm: 0,
+            ..Default::default()
+        }
+    }
+
+    /// Creates a HALT instruction
+    pub fn c_halt(rvinst: u32) -> Self {
+        Self {
+            rvinst,
+            t: "CINVALID".to_string(),
+            inst: "c.halt".to_string(),
+            rd: 0,
+            rs1: 0,
+            rs2: 0,
+            imm: 0,
+            ..Default::default()
+        }
+    }
+
     /// Creates a human-readable string containing RISCV data fields that are non-zero
     pub fn to_text(&self) -> String {
         let mut s = String::new();

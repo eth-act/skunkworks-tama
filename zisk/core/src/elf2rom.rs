@@ -1,49 +1,68 @@
 //! Reads RISC-V data from and ELF file and converts it to a ZiskRom
 
 use crate::{
-    add_end_jmp,
-    elf_extraction::{collect_elf_payload, merge_adjacent_ro_sections},
+    add_end_and_lib,
+    elf_extraction::{collect_elf_payload, merge_adjacent_ro_sections, ElfPayload},
     riscv2zisk_context::{add_entry_exit_jmp, add_zisk_code, add_zisk_init_data},
     AsmGenerationMethod, RoData, ZiskInst, ZiskRom, ZiskRom2Asm, ROM_ADDR, ROM_ADDR_MAX, ROM_ENTRY,
 };
 use rayon::prelude::*;
-use std::{error::Error, path::Path};
+use std::{
+    error::Error,
+    path::{Path, PathBuf},
+};
 
 /// Executes the ROM transpilation process: from ELF to Zisk
 pub fn elf2rom(elf_file: &Path) -> Result<ZiskRom, Box<dyn Error>> {
+    // Get the path to float library
+    let default_float_library_path = std::env::var("HOME")
+        .ok()
+        .map(PathBuf::from)
+        .unwrap()
+        .join(".zisk/zisk/lib-float/c/lib/ziskfloat.elf");
+
+    let float_library_path = if default_float_library_path.exists() {
+        default_float_library_path
+    } else {
+        PathBuf::from("./lib-float/c/lib/ziskfloat.elf")
+    };
+
     // Extract all relevant sections from the ELF file
-    let payload = collect_elf_payload(elf_file)?;
+    let payloads: Vec<ElfPayload> =
+        vec![collect_elf_payload(elf_file)?, collect_elf_payload(Path::new(&float_library_path))?];
 
     // Create an empty ZiskRom instance
     let mut rom: ZiskRom = ZiskRom { next_init_inst_addr: ROM_ENTRY, ..Default::default() };
 
     // Add the end instruction, jumping over it
-    add_end_jmp(&mut rom);
+    add_end_and_lib(&mut rom);
 
-    // 1. Add executable code sections
-    for section in &payload.exec {
-        add_zisk_code(&mut rom, section.addr, &section.data);
+    for payload in payloads.into_iter() {
+        // 1. Add executable code sections
+        for section in &payload.exec {
+            add_zisk_code(&mut rom, section.addr, &section.data);
+        }
+
+        // 2. Add read-write data sections (will be copied to RAM)
+        for section in &payload.rw {
+            add_zisk_init_data(&mut rom, section.addr, &section.data, true);
+        }
+
+        // 3. Add read-only data sections
+        // Merge adjacent read-only sections for efficiency
+        let merged_ro = merge_adjacent_ro_sections(&payload.ro);
+        for section in &merged_ro {
+            rom.ro_data.push(RoData::new(section.addr, section.data.len(), section.data.clone()));
+        }
+
+        // Add RO data initialization code instructions
+        for section in &merged_ro {
+            add_zisk_init_data(&mut rom, section.addr, &section.data, true);
+        }
+
+        // Add entry and exit jump instructions
+        add_entry_exit_jmp(&mut rom, payload.entry_point);
     }
-
-    // 2. Add read-write data sections (will be copied to RAM)
-    for section in &payload.rw {
-        add_zisk_init_data(&mut rom, section.addr, &section.data, true);
-    }
-
-    // 3. Add read-only data sections
-    // Merge adjacent read-only sections for efficiency
-    let merged_ro = merge_adjacent_ro_sections(&payload.ro);
-    for section in &merged_ro {
-        rom.ro_data.push(RoData::new(section.addr, section.data.len(), section.data.clone()));
-    }
-
-    // Add RO data initialization code instructions
-    for section in &merged_ro {
-        add_zisk_init_data(&mut rom, section.addr, &section.data, true);
-    }
-
-    // Add entry and exit jump instructions
-    add_entry_exit_jmp(&mut rom, payload.entry_point);
 
     // Preprocess the ROM (experimental)
     // Split the ROM instructions based on their address in order to get a better performance when
@@ -232,8 +251,7 @@ mod tests {
 
     #[test]
     fn test_optimize_empty_rom() {
-        let mut rom = ZiskRom::default();
-        rom.next_init_inst_addr = ROM_ENTRY;
+        let mut rom = ZiskRom { next_init_inst_addr: ROM_ENTRY, ..Default::default() };
 
         assert!(optimize_instruction_lookup(&mut rom).is_ok());
         assert_eq!(rom.sorted_pc_list.len(), 0);
@@ -244,8 +262,7 @@ mod tests {
 
     #[test]
     fn test_optimize_entry_instructions_only() {
-        let mut rom = ZiskRom::default();
-        rom.next_init_inst_addr = ROM_ENTRY;
+        let mut rom = ZiskRom { next_init_inst_addr: ROM_ENTRY, ..Default::default() };
 
         // Add some entry area instructions, but none in main area
         let entry_base = ROM_ENTRY;
@@ -275,8 +292,7 @@ mod tests {
 
     #[test]
     fn test_optimize_main_rom_instructions() {
-        let mut rom = ZiskRom::default();
-        rom.next_init_inst_addr = ROM_ENTRY;
+        let mut rom = ZiskRom { next_init_inst_addr: ROM_ENTRY, ..Default::default() };
 
         // Add main ROM area instructions, but none in BIOS area
         rom.insts.insert(ROM_ADDR, create_test_inst_builder(ROM_ADDR, 10));
@@ -300,8 +316,7 @@ mod tests {
 
     #[test]
     fn test_optimize_non_aligned_instructions() {
-        let mut rom = ZiskRom::default();
-        rom.next_init_inst_addr = ROM_ENTRY;
+        let mut rom = ZiskRom { next_init_inst_addr: ROM_ENTRY, ..Default::default() };
 
         // Add non-aligned instructions (not on 4-byte boundary)
         rom.insts.insert(ROM_ADDR + 1, create_test_inst_builder(ROM_ADDR + 1, 20));
@@ -341,8 +356,7 @@ mod tests {
 
     #[test]
     fn test_optimize_mixed_instructions() {
-        let mut rom = ZiskRom::default();
-        rom.next_init_inst_addr = ROM_ENTRY;
+        let mut rom = ZiskRom { next_init_inst_addr: ROM_ENTRY, ..Default::default() };
 
         // Mix of all three types
         rom.insts.insert(ROM_ENTRY + 4, create_test_inst_builder(ROM_ENTRY + 4, 1));
@@ -352,9 +366,9 @@ mod tests {
         assert!(optimize_instruction_lookup(&mut rom).is_ok());
 
         // All three arrays should have content
-        assert!(rom.rom_entry_instructions.len() > 0);
-        assert!(rom.rom_instructions.len() > 0);
-        assert!(rom.rom_na_instructions.len() > 0);
+        assert!(!rom.rom_entry_instructions.is_empty());
+        assert!(!rom.rom_instructions.is_empty());
+        assert!(!rom.rom_na_instructions.is_empty());
 
         // Check sorted list has all PCs
         assert_eq!(rom.sorted_pc_list.len(), 3);
@@ -363,8 +377,7 @@ mod tests {
 
     #[test]
     fn test_optimize_sorted_pc_indices() {
-        let mut rom = ZiskRom::default();
-        rom.next_init_inst_addr = ROM_ENTRY;
+        let mut rom = ZiskRom { next_init_inst_addr: ROM_ENTRY, ..Default::default() };
 
         // Add instructions out of order
         rom.insts.insert(ROM_ADDR + 8, create_test_inst_builder(ROM_ADDR + 8, 3));
@@ -389,8 +402,7 @@ mod tests {
 
     #[test]
     fn test_optimize_sorted_pc_indices_with_gaps() {
-        let mut rom = ZiskRom::default();
-        rom.next_init_inst_addr = ROM_ENTRY;
+        let mut rom = ZiskRom { next_init_inst_addr: ROM_ENTRY, ..Default::default() };
 
         rom.insts.insert(ROM_ADDR, create_test_inst_builder(ROM_ADDR, 10));
         rom.insts.insert(ROM_ADDR + 4, create_test_inst_builder(ROM_ADDR + 4, 11));
@@ -426,8 +438,7 @@ mod tests {
 
     #[test]
     fn test_optimize_address_below_rom_entry_err() {
-        let mut rom = ZiskRom::default();
-        rom.next_init_inst_addr = ROM_ENTRY;
+        let mut rom = ZiskRom { next_init_inst_addr: ROM_ENTRY, ..Default::default() };
 
         // Add instruction below ROM_ENTRY
         rom.insts.insert(ROM_ENTRY - 4, create_test_inst_builder(ROM_ENTRY - 4, 1));
@@ -436,8 +447,7 @@ mod tests {
 
     #[test]
     fn test_optimize_address_above_rom_max_err() {
-        let mut rom = ZiskRom::default();
-        rom.next_init_inst_addr = ROM_ENTRY;
+        let mut rom = ZiskRom { next_init_inst_addr: ROM_ENTRY, ..Default::default() };
 
         // Add instruction above ROM_ADDR_MAX.
         rom.insts.insert(ROM_ADDR_MAX + 4, create_test_inst_builder(ROM_ADDR_MAX + 4, 1));
@@ -446,8 +456,7 @@ mod tests {
 
     #[test]
     fn test_basic_optimize_preserves_instruction_data() {
-        let mut rom = ZiskRom::default();
-        rom.next_init_inst_addr = ROM_ENTRY;
+        let mut rom = ZiskRom { next_init_inst_addr: ROM_ENTRY, ..Default::default() };
 
         let mut builder = ZiskInstBuilder::new(ROM_ADDR);
         builder.i.op = 42;
