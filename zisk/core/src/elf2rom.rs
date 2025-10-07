@@ -2,30 +2,23 @@
 
 use crate::{
     add_end_and_lib,
-    elf_extraction::{collect_elf_payload, collect_elf_payload_from_bytes, merge_adjacent_ro_sections, ElfPayload},
+    elf_extraction::{
+        collect_elf_payload, collect_elf_payload_from_bytes, merge_adjacent_ro_sections, ElfPayload,
+    },
     riscv2zisk_context::{add_entry_exit_jmp, add_zisk_code, add_zisk_init_data},
     AsmGenerationMethod, RoData, ZiskInst, ZiskRom, ZiskRom2Asm, ROM_ADDR, ROM_ADDR_MAX, ROM_ENTRY,
 };
 use rayon::prelude::*;
-use rust_embed::Embed;
-use std::{
-    error::Error,
-    path::Path,
-};
-
-#[derive(Embed)]
-#[folder = "../lib-float/c/lib/"]
-struct FloatLibrary;
+use std::{error::Error, path::Path};
 
 /// Executes the ROM transpilation process: from ELF to Zisk
 pub fn elf2rom(elf_file: &Path) -> Result<ZiskRom, Box<dyn Error>> {
-    // Get the embedded float library
-    let float_lib_data = FloatLibrary::get("ziskfloat.elf")
-        .ok_or("Embedded float library not found")?;
+    // Load the embedded float library
+    const FLOAT_LIB_DATA: &[u8] = include_bytes!("../../lib-float/c/lib/ziskfloat.elf");
 
     // Extract all relevant sections from the ELF file
     let payloads: Vec<ElfPayload> =
-        vec![collect_elf_payload(elf_file)?, collect_elf_payload_from_bytes(&float_lib_data.data)?];
+        vec![collect_elf_payload(elf_file)?, collect_elf_payload_from_bytes(FLOAT_LIB_DATA)?];
 
     // Create an empty ZiskRom instance
     let mut rom: ZiskRom = ZiskRom { next_init_inst_addr: ROM_ENTRY, ..Default::default() };

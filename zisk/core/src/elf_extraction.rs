@@ -33,6 +33,15 @@ pub struct ElfPayload {
 }
 
 /// Extracts the relevant sections from the ELF file for `ZiskRom`
+pub fn collect_elf_payload(elf_path: &Path) -> Result<ElfPayload, Box<dyn Error>> {
+    // Read the ELF file
+    let file_data =
+        fs::read(elf_path).map_err(|_| format!("Error reading ELF file={}", elf_path.display()))?;
+
+    collect_elf_payload_from_bytes(&file_data)
+}
+
+/// Extracts the relevant sections from ELF file bytes for `ZiskRom`
 pub fn collect_elf_payload_from_bytes(file_data: &[u8]) -> Result<ElfPayload, Box<dyn Error>> {
     // Validate it's an ELF file
     match is_elf_file(file_data) {
@@ -118,14 +127,6 @@ pub fn collect_elf_payload_from_bytes(file_data: &[u8]) -> Result<ElfPayload, Bo
     }
 
     Ok(out)
-}
-
-/// Extracts the relevant sections from the ELF file for `ZiskRom` (from file path)
-pub fn collect_elf_payload(elf_path: &Path) -> Result<ElfPayload, Box<dyn Error>> {
-    let file_data =
-        fs::read(elf_path).map_err(|_| format!("Error reading ELF file={}", elf_path.display()))?;
-
-    collect_elf_payload_from_bytes(&file_data)
 }
 
 /// Helper function to merge adjacent read-only sections
