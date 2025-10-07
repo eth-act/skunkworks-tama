@@ -5,8 +5,19 @@
 - Go 1.21 or later (for bootstrapping TamaGo)
 - Rust toolchain (for building emulator)
 - Make
+- Git
 
 ## Building
+
+### First Time Setup
+
+The ZisK emulator is downloaded automatically during the build process. You can also set it up manually:
+
+```bash
+./setup-zisk.sh
+```
+
+To use a different branch or tag, edit `setup-zisk.sh` and change the `ZISK_BRANCH` variable.
 
 ### Build Everything
 ```bash
@@ -14,10 +25,16 @@ make
 ```
 
 This will:
-1. Build TamaGo
-2. Build the emulator
+1. Download/update ZisK emulator (if needed)
+2. Build TamaGo
+3. Build the emulator
 
 ### Build Components Individually
+
+Setup ZisK emulator:
+```bash
+make setup-zisk
+```
 
 Build only TamaGo:
 ```bash
@@ -32,10 +49,11 @@ make build-zisk
 ## Project Structure
 
 - `tamago-go-latest/` - TamaGo compiler (modified for softfloat support)
-- `zisk/` - emulator source
+- `zisk/` - ZisK emulator (downloaded from https://github.com/0xPolygonHermez/zisk)
 - `tamaboards/zkvm/` - Board support package
 - `tama-programs/` - Example programs
   - `empty/` - Minimal "Hello World" program
+- `setup-zisk.sh` - Script to download/update ZisK emulator
 
 ## Running Programs
 
