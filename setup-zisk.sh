@@ -23,8 +23,8 @@ if [ -d "$ZISK_DIR" ]; then
         echo "ZisK directory exists (not a git repo), skipping setup..."
     fi
 else
-    echo "Cloning ZisK repository..."
-    git clone --branch "$ZISK_BRANCH" "$ZISK_REPO" "$ZISK_DIR"
+    echo "Cloning ZisK repository (shallow clone, no history)..."
+    git clone --depth 1 --branch "$ZISK_BRANCH" "$ZISK_REPO" "$ZISK_DIR"
 fi
 
 echo "=== ZisK setup complete ==="

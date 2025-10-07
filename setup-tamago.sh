@@ -23,8 +23,8 @@ if [ -d "$TAMAGO_DIR" ]; then
         echo "TamaGo directory exists (not a git repo), skipping setup..."
     fi
 else
-    echo "Cloning TamaGo repository..."
-    git clone --branch "$TAMAGO_BRANCH" "$TAMAGO_REPO" "$TAMAGO_DIR"
+    echo "Cloning TamaGo repository (shallow clone, no history)..."
+    git clone --depth 1 --branch "$TAMAGO_BRANCH" "$TAMAGO_REPO" "$TAMAGO_DIR"
 
     echo "=== Building TamaGo ==="
     cd "$TAMAGO_DIR/src"
