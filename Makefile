@@ -54,16 +54,16 @@ compile-stateless:
 	cd tama-witgen/stateless && GO111MODULE=on go run -mod=readonly main.go
 
 run-empty-emu:
-	cd tama-programs/empty && ../../$(ZISKEMU) --elf empty.elf -v -c
+	$(ZISKEMU) --elf tama-programs/empty/empty.elf -v -c
 
 run-empty-emu-quiet:
-	cd tama-programs/empty && ../../$(ZISKEMU) --elf empty.elf -c
+	$(ZISKEMU) --elf tama-programs/empty/empty.elf -c
 
 run-addition:
-	cd tama-programs/addition && ../../$(ZISKEMU) --elf addition.elf -i witness.bin -c
+	$(ZISKEMU) --elf tama-programs/addition/addition.elf -i tama-programs/addition/witness.bin -c
 
 run-addition-verbose:
-	cd tama-programs/addition && ../../$(ZISKEMU) --elf addition.elf -i witness.bin -v -c
+	$(ZISKEMU) --elf tama-programs/addition/addition.elf -i tama-programs/addition/witness.bin -v -c
 
 run-empty-rom:
 	$(CARGO_ZISK) rom-setup --elf tama-programs/empty/empty.elf
@@ -72,10 +72,10 @@ run-stateless-rom:
 	$(CARGO_ZISK) rom-setup --elf tama-programs/stateless/stateless.elf -v
 
 run-stateless:
-	cd tama-programs/stateless && ../../$(ZISKEMU) --elf stateless.elf -i witness.bin -c
+	$(ZISKEMU) --elf tama-programs/stateless/stateless.elf -i tama-programs/stateless/witness.bin -c
 
 run-stateless-stats:
-	cd tama-programs/stateless && ../../$(ZISKEMU) --elf stateless.elf -i witness.bin -c --stats
+	$(ZISKEMU) --elf tama-programs/stateless/stateless.elf -i tama-programs/stateless/witness.bin -c --stats
 
 # Setup ROM for cargo-zisk run
 .PHONY: setup-empty-rom
