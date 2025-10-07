@@ -1,4 +1,4 @@
-.PHONY: all clean build-tamago build-zisk setup-tamago setup-zisk compile-empty compile-addition compile-geth-stateless run-empty-emu run-empty-emu-quiet run-addition run-addition-verbose run-empty-rom setup-empty-rom
+.PHONY: all clean build-tamago build-zisk init-submodules compile-empty compile-addition compile-geth-stateless run-empty-emu run-empty-emu-quiet run-addition run-addition-verbose run-empty-rom setup-empty-rom
 
 TAMAGO_DIR = tamago-go-latest
 TAMAGO_SRC = $(TAMAGO_DIR)/src
@@ -19,19 +19,16 @@ LDFLAGS_INTERNAL = -ldflags="\
 LDFLAGS = $(LDFLAGS_EXTERNAL)
 TAGS = -tags tamago,linkcpuinit,linkramstart,linkramsize,linkprintk,tinygo.wasm,tinygo,riscv64
 
-all: build-tamago build-zisk compile-empty run-empty-emu-quiet
+all: init-submodules build-tamago build-zisk compile-empty run-empty-emu-quiet
 
-setup-tamago:
-	@./setup-tamago.sh
+init-submodules:
+	@git submodule update --init --depth 1
 
-setup-zisk:
-	@./setup-zisk.sh
-
-build-tamago: setup-tamago
+build-tamago: init-submodules
 	cd $(TAMAGO_SRC) && ./make.bash
 	@cd $(TAMAGO_BIN) && export TAMAGO=$$(pwd)/go && echo "TAMAGO set to: $$TAMAGO"
 
-build-zisk: setup-zisk
+build-zisk: init-submodules
 	cd $(ZISK_DIR) && cargo build -p ziskemu -p cargo-zisk
 	@cd $(ZISK_DIR) && export ZISKEMU=$$(pwd)/target/debug/ziskemu && echo "ZISKEMU set to: $$ZISKEMU"
 

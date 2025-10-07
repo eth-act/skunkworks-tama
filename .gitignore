@@ -2,5 +2,3 @@ debug
 *.bak
 *.elf
 *.bin
-zisk/
-tamago-go-latest/

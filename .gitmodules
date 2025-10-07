@@ -1,0 +1,8 @@
+[submodule "tamago-go-latest"]
+	path = tamago-go-latest
+	url = https://github.com/eth-act/tamago-go.git
+	branch = zkvm-develop
+[submodule "zisk"]
+	path = zisk
+	url = https://github.com/kevaundray/zisk.git
+	branch = kw/embed-softfloat
