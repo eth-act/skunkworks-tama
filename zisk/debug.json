@@ -1,7 +1,0 @@
-{
-    "std_mode": {
-        "print_to_file": true,
-        "n_vals": 1000000,
-        "fast_mode": false
-    }
-}
