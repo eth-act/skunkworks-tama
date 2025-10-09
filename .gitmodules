@@ -6,3 +6,6 @@
 	path = tamago-go-latest
 	url = https://github.com/eth-act/tamago-go.git
 	branch = tamago1.25.2-zkvm-dev
+[submodule "go-ethereum"]
+	path = go-ethereum
+	url = https://github.com/ethereum/go-ethereum.git
