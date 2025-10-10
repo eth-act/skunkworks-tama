@@ -17,6 +17,10 @@ Both TamaGo and ZisK are managed as git submodules and will be initialized autom
 git submodule update --init --depth 1
 ```
 
+### Using docker
+
+Run `run-docker.sh` to enter the shell with all dependencies for Zisk, TamaGo, Rust installed.
+
 ### Build Everything
 ```bash
 make
