@@ -7,8 +7,14 @@ import (
 	_ "tamagotest/tamaboards/zkvm"
 )
 
+// myExternalFunction is implemented in external_riscv64.s
+// It bridges to a C function that takes two uint32 and returns uint32
+//go:noescape
+func myExternalFunction(a, b uint32) uint32
+
 func main() {	
-	x := 10
-	y := 11
-	fmt.Println("Hello World", x + y)
+	x := uint32(10)
+        y := uint32(20)
+	result := myExternalFunction(x, y)
+	fmt.Printf("myExternalFunction(%d, %d) = %d\n", x, y, result)
 }
