@@ -51,7 +51,7 @@ make build-zisk
 ## Project Structure
 
 - `tamago-go-latest/` - TamaGo compiler (git submodule: https://github.com/eth-act/tamago-go, branch: tamago1.25.2-zkvm-dev)
-- `zisk/` - ZisK emulator (git submodule: https://github.com/kevaundray/zisk, branch: kw/embed-softfloat)
+- `zisk/` - ZisK emulator (git submodule: https://github.com/0xPolygonHermez/zisk.git, branch: feature/transpile_unsupported_instructions)
 - `tamaboards/zkvm/` - Board support package
 - `tama-programs/` - Example programs
   - `empty/` - Minimal "Hello World" program
