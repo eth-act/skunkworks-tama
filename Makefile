@@ -24,11 +24,11 @@ all: init-submodules build-tamago build-zisk compile-empty run-empty-emu-quiet
 init-submodules:
 	@git submodule update --init --depth 1
 
-build-tamago: init-submodules
+build-tamago:
 	cd $(TAMAGO_SRC) && ./make.bash
 	@cd $(TAMAGO_BIN) && export TAMAGO=$$(pwd)/go && echo "TAMAGO set to: $$TAMAGO"
 
-build-zisk: init-submodules
+build-zisk:
 	cd $(ZISK_DIR) && cargo build -p ziskemu -p cargo-zisk
 	@cd $(ZISK_DIR) && export ZISKEMU=$$(pwd)/target/debug/ziskemu && echo "ZISKEMU set to: $$ZISKEMU"
 
