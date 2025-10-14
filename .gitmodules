@@ -1,7 +1,7 @@
 [submodule "zisk"]
 	path = zisk
-	url = https://github.com/kevaundray/zisk.git
-	branch = kw/embed-softfloat
+	url = https://github.com/0xPolygonHermez/zisk.git
+	branch = feature/transpile_unsupported_instructions
 [submodule "tamago-go-latest"]
 	path = tamago-go-latest
 	url = https://github.com/eth-act/tamago-go.git
