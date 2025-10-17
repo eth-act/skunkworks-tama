@@ -7,9 +7,11 @@ import (
 	_ "tamagotest/tamaboards/zkvm"
 )
 
+// Follow instruction from: https://words.filippo.io/rustgo/
+
 // myExternalFunction is implemented in external_riscv64.s
 // It bridges to a C function that takes two uint32 and returns uint32
-//go:noescape
+// go:noescape
 func myExternalFunction(a, b uint32) uint32
 
 func main() {	
