@@ -37,8 +37,11 @@ build: build-tamago build-zisk
 clean:
 	cd $(ZISK_DIR) && cargo clean
 
-compile-keccak:
-	cd tama-programs/keccak && CGO_ENABLED=0 GOROOT=$(PWD)/$(TAMAGO_DIR) GOOS=tamago GOARCH=riscv64 ../../$(TAMAGO_BIN)/go build $(GCFLAGS) $(LDFLAGS_INTERNAL) $(TAGS) -o keccak.elf .
+compile-zisk-precompiles:
+	cd zisk_precompiles && CGO_ENABLED=0 GOROOT=$(PWD)/$(TAMAGO_DIR) GOOS=tamago GOARCH=riscv64 ../$(TAMAGO_BIN)/go build $(GCFLAGS) $(LDFLAGS_INTERNAL) $(TAGS) .
+
+test-zisk-precompiles:
+	cd zisk_precompiles && CGO_ENABLED=0 GOROOT=$(PWD)/$(TAMAGO_DIR) GOOS=tamago GOARCH=riscv64 ../$(TAMAGO_BIN)/go test $(GCFLAGS) $(LDFLAGS_INTERNAL) $(TAGS) -p 1 -v -exec="$(CURDIR)/test-runner.sh" ./...
 
 compile-empty:
 	cd tama-programs/empty && CGO_ENABLED=0 GOROOT=$(PWD)/$(TAMAGO_DIR) GOOS=tamago GOARCH=riscv64 ../../$(TAMAGO_BIN)/go build $(GCFLAGS) $(LDFLAGS_INTERNAL) $(TAGS) -o empty.elf .
@@ -55,9 +58,6 @@ compile-stateless:
 	@echo "=== Generating witness for stateless program ==="
 # 	-mod=read-only can be removed later. Mainly here because geth uses tablewriter 0.0.5 and this repo keeps updating to v1 	
 	cd tama-witgen/stateless && GO111MODULE=on go run -mod=readonly main.go
-
-run-keccak-emu-quiet:
-	$(ZISKEMU) --elf tama-programs/keccak/keccak.elf -c
 
 run-empty-emu:
 	$(ZISKEMU) --elf tama-programs/empty/empty.elf -v -c
