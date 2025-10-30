@@ -15,7 +15,7 @@ func TestSha256(t *testing.T) {
 	params := SyscallSha256Params{State: &state, Input: &input}
 
 	// Call the syscall function
-	Sha256(&params)
+	Sha256Update(&params)
 
 	// TODO: verify the result
 	fmt.Println("state: {}, input: {}", state, input)

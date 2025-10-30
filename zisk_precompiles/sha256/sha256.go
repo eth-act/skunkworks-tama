@@ -14,7 +14,7 @@ type SyscallSha256Params struct {
 }
 
 //go:noinline
-func Sha256(arr *SyscallSha256Params) {
+func Sha256Update(arr *SyscallSha256Params) {
 	ptr := uintptr(unsafe.Pointer(arr))
 	syscall_sha256(ptr)
 }
