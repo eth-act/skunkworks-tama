@@ -11,7 +11,7 @@ func verifyComputation(params *SyscallArith256ModParams, t *testing.T) {
 	a := internal.Uint64ArrayToBigInt(params.A)
 	b := internal.Uint64ArrayToBigInt(params.B)
 	c := internal.Uint64ArrayToBigInt(params.C)
-	module := internal.Uint64ArrayToBigInt(params.Module)
+	module := internal.Uint64ArrayToBigInt(params.Modulus)
 	d := internal.Uint64ArrayToBigInt(params.D)
 
 	// Compute expected result: (a * b + c) mod module
@@ -45,11 +45,11 @@ func TestArith256(t *testing.T) {
 	d := [4]uint64{0, 0, 0, 0}
 
 	params := SyscallArith256ModParams{
-		A:      &a,
-		B:      &b,
-		C:      &c,
-		Module: &module,
-		D:      &d,
+		A:       &a,
+		B:       &b,
+		C:       &c,
+		Modulus: &module,
+		D:       &d,
 	}
 
 	Arith256_mod(&params)

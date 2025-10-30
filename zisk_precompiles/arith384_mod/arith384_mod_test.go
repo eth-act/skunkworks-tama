@@ -21,7 +21,7 @@ func verifyComputation(params *SyscallArith384ModParams, t *testing.T) {
 	a := uint64ArrayToBigInt(params.A)
 	b := uint64ArrayToBigInt(params.B)
 	c := uint64ArrayToBigInt(params.C)
-	module := uint64ArrayToBigInt(params.Module)
+	module := uint64ArrayToBigInt(params.Modulus)
 	d := uint64ArrayToBigInt(params.D)
 
 	// Compute expected result: (a * b + c) mod module
@@ -57,11 +57,11 @@ func TestArith256(t *testing.T) {
 	d := [6]uint64{0, 0, 0, 0, 0, 0}
 
 	params := SyscallArith384ModParams{
-		A:      &a,
-		B:      &b,
-		C:      &c,
-		Module: &module,
-		D:      &d,
+		A:       &a,
+		B:       &b,
+		C:       &c,
+		Modulus: &module,
+		D:       &d,
 	}
 
 	Arith384_mod(&params)

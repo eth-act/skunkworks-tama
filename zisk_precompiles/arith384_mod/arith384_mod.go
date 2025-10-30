@@ -7,11 +7,11 @@ import (
 )
 
 type SyscallArith384ModParams struct {
-	A      *[6]uint64
-	B      *[6]uint64
-	C      *[6]uint64
-	Module *[6]uint64
-	D      *[6]uint64
+	A       *[6]uint64
+	B       *[6]uint64
+	C       *[6]uint64
+	Modulus *[6]uint64
+	D       *[6]uint64
 }
 
 //go:noinline
