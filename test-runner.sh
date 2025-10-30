@@ -2,7 +2,10 @@
 
 set -e
 
-SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
+if [ -z "$ZISKEMU" ]; then
+    echo "Error: ZISKEMU environment variable is not set"
+    exit 1
+fi
 
-$SCRIPT_DIR/zisk/target/debug/ziskemu -c --elf $1
+$ZISKEMU -c --elf $1
 

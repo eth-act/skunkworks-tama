@@ -6,7 +6,7 @@ TAMAGO_BIN = $(TAMAGO_DIR)/bin
 TAMAGO = GOROOT=$(PWD)/$(TAMAGO_DIR) $(TAMAGO_BIN)/go
 
 ZISK_DIR = zisk
-ZISKEMU = $(ZISK_DIR)/target/debug/ziskemu
+ZISKEMU = $(realpath $(ZISK_DIR)/target/debug/ziskemu)
 CARGO_ZISK = $(ZISK_DIR)/target/debug/cargo-zisk
 
 # Compilation flags for TamaGo
@@ -41,7 +41,7 @@ compile-zisk-precompiles:
 	cd zisk_precompiles && CGO_ENABLED=0 GOROOT=$(PWD)/$(TAMAGO_DIR) GOOS=tamago GOARCH=riscv64 ../$(TAMAGO_BIN)/go build $(GCFLAGS) $(LDFLAGS_INTERNAL) $(TAGS) .
 
 test-zisk-precompiles:
-	cd zisk_precompiles && CGO_ENABLED=0 GOROOT=$(PWD)/$(TAMAGO_DIR) GOOS=tamago GOARCH=riscv64 ../$(TAMAGO_BIN)/go test $(GCFLAGS) $(LDFLAGS_INTERNAL) $(TAGS) -p 1 -v -exec="$(CURDIR)/test-runner.sh" ./...
+	cd zisk_precompiles && ZISKEMU=$(ZISKEMU) CGO_ENABLED=0 GOROOT=$(PWD)/$(TAMAGO_DIR) GOOS=tamago GOARCH=riscv64 ../$(TAMAGO_BIN)/go test $(GCFLAGS) $(LDFLAGS_INTERNAL) $(TAGS) -p 1 -v -exec="$(CURDIR)/test-runner.sh" ./...
 
 compile-empty:
 	cd tama-programs/empty && CGO_ENABLED=0 GOROOT=$(PWD)/$(TAMAGO_DIR) GOOS=tamago GOARCH=riscv64 ../../$(TAMAGO_BIN)/go build $(GCFLAGS) $(LDFLAGS_INTERNAL) $(TAGS) -o empty.elf .
