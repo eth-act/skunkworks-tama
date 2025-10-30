@@ -6,6 +6,8 @@ import (
 	"unsafe"
 )
 
+// Arguments are described here: https://github.com/0xPolygonHermez/zisk/blob/0207f975d0f03724f6f5784692ee2725e0d340d3/ziskos/entrypoint/src/syscalls/arith384_mod.rs
+
 type SyscallArith384ModParams struct {
 	A       *[6]uint64
 	B       *[6]uint64

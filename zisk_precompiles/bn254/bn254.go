@@ -6,6 +6,8 @@ import (
 	"unsafe"
 )
 
+// Arguments are described here in bn254 files: https://github.com/0xPolygonHermez/zisk/tree/0207f975d0f03724f6f5784692ee2725e0d340d3/ziskos/entrypoint/src/syscalls
+
 type Point256 struct {
 	X [4]uint64
 	Y [4]uint64

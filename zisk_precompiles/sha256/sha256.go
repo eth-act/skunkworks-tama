@@ -6,6 +6,8 @@ import (
 	"unsafe"
 )
 
+// Arguments are described here: https://github.com/0xPolygonHermez/zisk/blob/0207f975d0f03724f6f5784692ee2725e0d340d3/ziskos/entrypoint/src/syscalls/sha256f.rs
+
 type SyscallSha256Params struct {
 	State *[4]uint64
 	Input *[8]uint64
