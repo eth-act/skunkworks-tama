@@ -10,7 +10,7 @@ ZISKEMU = $(realpath $(ZISK_DIR)/target/debug/ziskemu)
 CARGO_ZISK = $(ZISK_DIR)/target/debug/cargo-zisk
 
 # Compilation flags for TamaGo
-GCFLAGS = -gcflags="all=-d=softfloat"
+GCFLAGS = -gcflags=""
 
 LDFLAGS_INTERNAL = -ldflags="\
        -T 0x80001000 -D 0xa0020000"
@@ -43,21 +43,35 @@ compile-zisk-precompiles:
 test-zisk-precompiles:
 	cd zisk_precompiles && ZISKEMU=$(ZISKEMU) CGO_ENABLED=0 GOROOT=$(PWD)/$(TAMAGO_DIR) GOOS=tamago GOARCH=riscv64 ../$(TAMAGO_BIN)/go test $(GCFLAGS) $(LDFLAGS_INTERNAL) $(TAGS) -p 1 -v -exec="$(CURDIR)/test-runner.sh" ./...
 
+compile-calculator-int:
+	cd tama-programs/calculator-int && CGO_ENABLED=0 GOROOT=$(PWD)/$(TAMAGO_DIR) GOOS=tamago GOARCH=riscv64 ../../$(TAMAGO_BIN)/go build $(GCFLAGS) $(LDFLAGS_INTERNAL) $(TAGS) -o calculator-int.elf .
+	@echo "=== Generating witness for calculator-int program ==="
+	go run ./tama-witgen/two-int32s/main.go > ./tama-programs/calculator-int/witness.bin
+
+compile-calculator-float:
+	cd tama-programs/calculator-float && CGO_ENABLED=0 GOROOT=$(PWD)/$(TAMAGO_DIR) GOOS=tamago GOARCH=riscv64 ../../$(TAMAGO_BIN)/go build $(GCFLAGS) $(LDFLAGS_INTERNAL) $(TAGS) -o calculator-float.elf .
+	@echo "=== Generating witness for calculator-float program ==="
+	go run ./tama-witgen/two-int32s/main.go > ./tama-programs/calculator-float/witness.bin
+
 compile-empty:
 	cd tama-programs/empty && CGO_ENABLED=0 GOROOT=$(PWD)/$(TAMAGO_DIR) GOOS=tamago GOARCH=riscv64 ../../$(TAMAGO_BIN)/go build $(GCFLAGS) $(LDFLAGS_INTERNAL) $(TAGS) -o empty.elf .
-	@echo "=== Generating witness for empty program ==="
-	go run ./tama-witgen/addition/main.go
 
 compile-addition:
 	cd tama-programs/addition && CGO_ENABLED=0 GOROOT=$(PWD)/$(TAMAGO_DIR) GOOS=tamago GOARCH=riscv64 ../../$(TAMAGO_BIN)/go build $(GCFLAGS) $(LDFLAGS_INTERNAL) $(TAGS) -o addition.elf .
 	@echo "=== Generating witness for addition program ==="
-	go run ./tama-witgen/addition/main.go
+	go run ./tama-witgen/two-int32s/main.go > ./tama-programs/addition/witness.bin
 
 compile-stateless:
 	cd tama-programs/stateless && CGO_ENABLED=0 GOROOT=$(PWD)/$(TAMAGO_DIR) GOOS=tamago GOARCH=riscv64 ../../$(TAMAGO_BIN)/go build $(GCFLAGS) $(LDFLAGS_INTERNAL) $(TAGS) -o stateless.elf .
 	@echo "=== Generating witness for stateless program ==="
 # 	-mod=read-only can be removed later. Mainly here because geth uses tablewriter 0.0.5 and this repo keeps updating to v1 	
 	cd tama-witgen/stateless && GO111MODULE=on go run -mod=readonly main.go
+
+run-calculator-int-emu-quiet:
+	$(ZISKEMU) --elf tama-programs/calculator-int/calculator-int.elf -i tama-programs/calculator-int/witness.bin -c
+
+run-calculator-float-emu-quiet:
+	$(ZISKEMU) --elf tama-programs/calculator-float/calculator-float.elf -i tama-programs/calculator-float/witness.bin -c
 
 run-empty-emu:
 	$(ZISKEMU) --elf tama-programs/empty/empty.elf -v -c
