@@ -55,6 +55,7 @@ make build-zisk
 - `tamaboards/zkvm/` - Board support package
 - `tama-programs/` - Example programs
   - `empty/` - Minimal "Hello World" program
+- `zisk_precompiles` - Go bindings to Zisk precompiles
 
 ## Running Programs
 
@@ -164,3 +165,12 @@ Remove all built artifacts:
 ```bash
 make clean
 ```
+
+## Package artifacts
+
+Programs in `tama-programs` directory can be built and packaged using the target
+```bash
+make package-tama-programs
+```
+
+That builds programs in `tama-programs` and creates `tama-programs.tar.gz`

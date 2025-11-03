@@ -102,3 +102,13 @@ run-stateless-stats:
 setup-empty-rom: compile-empty
 	@echo "=== Setting up ROM with cargo-zisk ==="
 	$(CARGO_ZISK) rom-setup --elf tama-programs/empty/empty.elf
+
+package-tama-programs: compile-empty compile-addition compile-calculator-int compile-calculator-float
+	@echo "=== Packaging sample programs ==="
+	$(eval NAMES := $(patsubst compile-%,%,$^))
+	@rm -f tama-programs.tar.gz
+	@tar -czf tama-programs.tar.gz \
+		$(foreach name,$(NAMES),\
+			$(wildcard tama-programs/$(name)/*.elf tama-programs/$(name)/*.s tama-programs/$(name)/*.go tama-programs/$(name)/*.bin))
+	@echo "Created tama-programs.tar.gz with contents:"
+	@tar -tzf tama-programs.tar.gz
