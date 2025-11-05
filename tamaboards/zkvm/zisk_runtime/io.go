@@ -3,7 +3,7 @@
 package zisk_runtime
 
 import (
-	"tamagotest/tamaboards/zkvm"
+	"github.com/eth-act/skunkworks-tama/tamaboards/zkvm"
 	"unsafe"
 )
 

@@ -1,7 +1,7 @@
 package bls12_381
 
 import (
-	_ "tamagotest/tamaboards/zkvm"
+	_ "github.com/eth-act/skunkworks-tama/tamaboards/zkvm"
 	"testing"
 )
 

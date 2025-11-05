@@ -7,7 +7,7 @@ import (
 	"math/big"
 	"os"
 
-	"tamagotest/tamaboards/serialization"
+	"github.com/eth-act/skunkworks-tama/tamaboards/serialization"
 
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/common/hexutil"

@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"math/big"
 
-	"tamagotest/tamaboards/zkvm/zisk_runtime"
+	"github.com/eth-act/skunkworks-tama/tamaboards/zkvm/zisk_runtime"
 
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core"

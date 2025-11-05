@@ -3,7 +3,7 @@ package main
 import (
 	"encoding/binary"
 	"os"
-	"tamagotest/tamaboards/serialization"
+	"github.com/eth-act/skunkworks-tama/tamaboards/serialization"
 )
 
 func main() {

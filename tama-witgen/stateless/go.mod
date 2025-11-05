@@ -6,7 +6,7 @@ toolchain go1.24.5
 
 require (
 	github.com/ethereum/go-ethereum v1.14.12-0.20241209164035-d93c5e3c9a94
-	tamagotest v0.0.0
+	github.com/eth-act/skunkworks-tama v0.0.0
 )
 
 require (
@@ -42,6 +42,6 @@ require (
 
 replace github.com/ethereum/go-ethereum => ../../go-ethereum
 
-replace tamagotest => ../../
+replace github.com/eth-act/skunkworks-tama => ../../
 
 replace github.com/olekukonko/tablewriter => github.com/olekukonko/tablewriter v0.0.5

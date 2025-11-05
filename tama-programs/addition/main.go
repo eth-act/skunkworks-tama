@@ -4,7 +4,7 @@ package main
 
 import (
 	"fmt"
-	"tamagotest/tamaboards/zkvm/zisk_runtime"
+	"github.com/eth-act/skunkworks-tama/tamaboards/zkvm/zisk_runtime"
 )
 
 func main() {	

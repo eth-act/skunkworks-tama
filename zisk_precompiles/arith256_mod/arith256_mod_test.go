@@ -2,8 +2,8 @@ package arith256_mod
 
 import (
 	"math/big"
-	_ "tamagotest/tamaboards/zkvm"
-	"tamagotest/zisk_precompiles/internal"
+	_ "github.com/eth-act/skunkworks-tama/tamaboards/zkvm"
+	"github.com/eth-act/skunkworks-tama/zisk_precompiles/internal"
 	"testing"
 )
 
