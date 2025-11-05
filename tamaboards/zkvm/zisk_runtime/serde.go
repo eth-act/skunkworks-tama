@@ -5,7 +5,7 @@ package zisk_runtime
 import (
 	"crypto/sha256"
 	"hash"
-	"tamagotest/tamaboards/serialization"
+	"github.com/eth-act/skunkworks-tama/tamaboards/serialization"
 )
 
 // publicInputs will store a hash of all public inputs

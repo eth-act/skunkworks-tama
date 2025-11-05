@@ -4,7 +4,7 @@ package main
 
 import (
 	"fmt"
-	_ "tamagotest/tamaboards/zkvm"
+	_ "github.com/eth-act/skunkworks-tama/tamaboards/zkvm"
 )
 
 func main() {	

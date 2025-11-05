@@ -4,8 +4,8 @@ package main
 
 import (
 	"fmt"
-	_ "tamagotest/tamaboards/zkvm"
-	"tamagotest/tamaboards/zkvm/zisk_runtime"
+	_ "github.com/eth-act/skunkworks-tama/tamaboards/zkvm"
+	"github.com/eth-act/skunkworks-tama/tamaboards/zkvm/zisk_runtime"
 )
 
 func main() {

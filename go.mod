@@ -1,4 +1,4 @@
-module tamagotest
+module github.com/eth-act/skunkworks-tama
 
 go 1.24.4
 

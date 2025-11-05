@@ -44,7 +44,7 @@ We will supply methods to read these into the program once we have shown it to w
 ```go
 package main
 
-import "tamagotest/boards/zkvm"
+import "github.com/eth-act/skunkworks-tama/boards/zkvm"
 
 func main() {
     zkvm.Init()
