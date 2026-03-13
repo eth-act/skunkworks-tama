@@ -3,8 +3,9 @@
 package zisk_runtime
 
 import (
-	"github.com/eth-act/skunkworks-tama/tamaboards/zkvm"
 	"unsafe"
+
+	"github.com/eth-act/skunkworks-tama/tamaboards/zkvm"
 )
 
 /*
@@ -78,42 +79,22 @@ func UnsafeReadBytes(n int) []byte {
 // Note: This method is used for writing public inputs.
 // It is not used for sending data from the host to guest.
 //
-// The emulator expects output in this format:
-// - First 4 bytes at OUTPUT_ADDR: count of u32 values (not bytes!)
-// - Then the actual data as u32 values starting at OUTPUT_ADDR + 4
-// TODO: Think about function naming
+// Output format from: https://github.com/0xPolygonHermez/zisk/blob/v0.16.0/emulator/src/emu.rs
+// Data is written directly at OUTPUT_ADDR + offset without a count prefix.
 func CommitBytes(data []byte) {
 	if len(data) == 0 {
 		return
 	}
+	if len(data) >= 256 {
+		panic("Maximum number of public outputs: 256 bytes")
+	}
 
-	// Write the data
-	dst := unsafe.Pointer(uintptr(zkvm.OUTPUT_ADDR + 4 + OUTPUT_PTR))
+	// Write the data directly at OUTPUT_ADDR + OUTPUT_PTR
+	dst := unsafe.Pointer(uintptr(zkvm.OUTPUT_ADDR + OUTPUT_PTR))
 	src := unsafe.Pointer(&data[0])
 	// Copy the bytes
 	for i := 0; i < len(data); i++ {
 		*(*byte)(unsafe.Add(dst, i)) = *(*byte)(unsafe.Add(src, i))
 	}
 	OUTPUT_PTR += uint64(len(data))
-
-	// Update the count header with total u32 values written so far
-	// OUTPUT_PTR now contains total bytes written (since we write at OUTPUT_ADDR + 4 + OUTPUT_PTR)
-	totalBytes := OUTPUT_PTR
-	numU32s := (totalBytes + 3) / 4 // Round up to nearest u32
-	countPtr := (*uint32)(unsafe.Pointer(uintptr(zkvm.OUTPUT_ADDR)))
-	*countPtr = uint32(numU32s)
-
-	/*
-		TODO: Try the following:
-		func CommitBytes(data []byte) {
-		    if len(data) == 0 {
-		        return // Handle empty slice case
-		    }
-		    dst := unsafe.Pointer(uintptr(zkvm.OUTPUT_ADDR + OUTPUT_PTR))
-		    dstSlice := unsafe.Slice((*byte)(dst), len(data))
-		    copy(dstSlice, data)
-		    OUTPUT_PTR += uint64(len(data))
-		}
-	*/
-
 }
