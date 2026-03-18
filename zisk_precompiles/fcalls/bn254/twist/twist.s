@@ -1,0 +1,62 @@
+//go:build tamago && riscv64
+
+#include "textflag.h"
+#include "../../../internal/csr.h"
+
+TEXT ·fcall_add(SB), NOSPLIT, $0-24
+  MOV p1+0(FP), A0
+  MOV p2+8(FP), A1
+  MOV result+16(FP), A2
+
+  CSRS(0x8F5, 10)
+
+  MOV A1, A0
+  CSRS(0x8F5, 10)
+
+  CSRWI(0x8C0, 8)
+
+  CSRR(0xFFE); MOV T0, 0(A2)
+  CSRR(0xFFE); MOV T0, 8(A2)
+  CSRR(0xFFE); MOV T0, 16(A2)
+  CSRR(0xFFE); MOV T0, 24(A2)
+  CSRR(0xFFE); MOV T0, 32(A2)
+  CSRR(0xFFE); MOV T0, 40(A2)
+  CSRR(0xFFE); MOV T0, 48(A2)
+  CSRR(0xFFE); MOV T0, 56(A2)
+  CSRR(0xFFE); MOV T0, 64(A2)
+  CSRR(0xFFE); MOV T0, 72(A2)
+  CSRR(0xFFE); MOV T0, 80(A2)
+  CSRR(0xFFE); MOV T0, 88(A2)
+  CSRR(0xFFE); MOV T0, 96(A2)
+  CSRR(0xFFE); MOV T0, 104(A2)
+  CSRR(0xFFE); MOV T0, 112(A2)
+  CSRR(0xFFE); MOV T0, 120(A2)
+
+  RET
+
+TEXT ·fcall_dbl(SB), NOSPLIT, $0-16
+  MOV p+0(FP), A0
+  MOV result+8(FP), A1
+
+  CSRS(0x8F5, 10)
+
+  CSRWI(0x8C0, 9)
+
+  CSRR(0xFFE); MOV T0, 0(A1)
+  CSRR(0xFFE); MOV T0, 8(A1)
+  CSRR(0xFFE); MOV T0, 16(A1)
+  CSRR(0xFFE); MOV T0, 24(A1)
+  CSRR(0xFFE); MOV T0, 32(A1)
+  CSRR(0xFFE); MOV T0, 40(A1)
+  CSRR(0xFFE); MOV T0, 48(A1)
+  CSRR(0xFFE); MOV T0, 56(A1)
+  CSRR(0xFFE); MOV T0, 64(A1)
+  CSRR(0xFFE); MOV T0, 72(A1)
+  CSRR(0xFFE); MOV T0, 80(A1)
+  CSRR(0xFFE); MOV T0, 88(A1)
+  CSRR(0xFFE); MOV T0, 96(A1)
+  CSRR(0xFFE); MOV T0, 104(A1)
+  CSRR(0xFFE); MOV T0, 112(A1)
+  CSRR(0xFFE); MOV T0, 120(A1)
+
+  RET
