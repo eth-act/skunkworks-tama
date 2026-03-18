@@ -17,18 +17,20 @@ const (
 	ROM_ADDR  = 0x80000000 // First program ROM instruction address
 
 	// ZisK I/O addresses (matching Zisk memory map from mem.rs)
-	INPUT_ADDR = 0x90000000 // First input data memory address
+	INPUT_ADDR = 0x40000000 // First input data memory address
 	SYS_ADDR   = 0xa0000000 // First system RW memory address (RAM_ADDR)
 	// TODO: Check: Can BSS be initialized at system address and UART_ADDR overwrite it
 	UART_ADDR   = 0xa0000200 // UART memory address (SYS_ADDR + 512)
 	OUTPUT_ADDR = 0xa0010000 // First output RW memory address
 )
 
+// Memory layout from: https://github.com/0xPolygonHermez/zisk/blob/v0.16.0/core/src/mem.rs
+
 //go:linkname ramStart runtime.ramStart
-var ramStart uint64 = 0xa0020000 // Match ZisK's AVAILABLE_MEM_ADDR
+var ramStart uint64 = 0xa0030000 // Match ZisK's AVAILABLE_MEM_ADDR (SYS_ADDR + 0x30000)
 
 //go:linkname ramSize runtime.ramSize
-var ramSize uint64 = 0x1FFE0000 // Match ZisK's RAM size (~512MB)
+var ramSize uint64 = 0x1FFD0000 // Match ZisK's RAM size (0xc0000000 - 0xa0030000)
 
 // ramStackOffset is always defined here as there's no linkramstackoffset build tag
 //
@@ -39,7 +41,7 @@ var ramStackOffset uint64 = 0x100000 // 1MB stack (matching linker script and Zi
 // Bloc sets the heap start address to bypass initBloc()
 //
 //go:linkname Bloc runtime.Bloc
-var Bloc uintptr = 0xa0120000 // Start heap after stack (ramStart + ramStackOffset)
+var Bloc uintptr = 0xa0130000 // Start heap after stack (ramStart + ramStackOffset = 0xa0030000 + 0x100000)
 
 // printk implementation for zkVM
 //
@@ -98,6 +100,6 @@ func zkVMExit(code int32) {
 func Shutdown()
 
 // setRegisters is defined in hwinit1.s and sets A0/A1 registers
-// A0 = INPUT_ADDR (0x90000000)
+// A0 = INPUT_ADDR (0x40000000)
 // A1 = OUTPUT_ADDR (0xa0010000)
 func setRegisters()

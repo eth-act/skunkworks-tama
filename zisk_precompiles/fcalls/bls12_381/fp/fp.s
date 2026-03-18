@@ -1,0 +1,39 @@
+//go:build tamago && riscv64
+
+#include "textflag.h"
+#include "../../../internal/csr.h"
+
+TEXT ·fcall_inv(SB), NOSPLIT, $0-16
+  MOV input+0(FP), A0
+  MOV result+8(FP), A1
+
+  CSRS(0x8F3, 10)
+
+  CSRWI(0x8C0, 10)
+
+  CSRR(0xFFE); MOV T0, 0(A1)
+  CSRR(0xFFE); MOV T0, 8(A1)
+  CSRR(0xFFE); MOV T0, 16(A1)
+  CSRR(0xFFE); MOV T0, 24(A1)
+  CSRR(0xFFE); MOV T0, 32(A1)
+  CSRR(0xFFE); MOV T0, 40(A1)
+
+  RET
+
+TEXT ·fcall_sqrt(SB), NOSPLIT, $0-16
+  MOV input+0(FP), A0
+  MOV result+8(FP), A1
+
+  CSRS(0x8F3, 10)
+
+  CSRWI(0x8C0, 11)
+
+  CSRR(0xFFE); MOV T0, 0(A1)
+  CSRR(0xFFE); MOV T0, 8(A1)
+  CSRR(0xFFE); MOV T0, 16(A1)
+  CSRR(0xFFE); MOV T0, 24(A1)
+  CSRR(0xFFE); MOV T0, 32(A1)
+  CSRR(0xFFE); MOV T0, 40(A1)
+  CSRR(0xFFE); MOV T0, 48(A1)
+
+  RET

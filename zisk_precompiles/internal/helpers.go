@@ -22,7 +22,52 @@ func PrintUint256(name string, arr *[4]uint64) {
 	fmt.Printf("%s: %s\n", name, value.String())
 }
 
-func Print_memory_repr[T any](point *T) {
+func DecStringToUint64x4(s string) [4]uint64 {
+	n, ok := new(big.Int).SetString(s, 10)
+	if !ok {
+		panic("invalid decimal string: " + s)
+	}
+	mask := new(big.Int).SetUint64(0xffffffffffffffff)
+	var result [4]uint64
+	for i := 0; i < 4; i++ {
+		result[i] = new(big.Int).And(n, mask).Uint64()
+		n.Rsh(n, 64)
+	}
+	return result
+}
+
+func DecStringToUint64x6(s string) [6]uint64 {
+	n, ok := new(big.Int).SetString(s, 10)
+	if !ok {
+		panic("invalid decimal string: " + s)
+	}
+	mask := new(big.Int).SetUint64(0xffffffffffffffff)
+	var result [6]uint64
+	for i := 0; i < 6; i++ {
+		result[i] = new(big.Int).And(n, mask).Uint64()
+		n.Rsh(n, 64)
+	}
+	return result
+}
+
+func HexStringToUint64x6(s string) [6]uint64 {
+	if len(s) >= 2 && s[:2] == "0x" || len(s) >= 2 && s[:2] == "0X" {
+		s = s[2:]
+	}
+	n, ok := new(big.Int).SetString(s, 16)
+	if !ok {
+		panic("invalid hex string: " + s)
+	}
+	mask := new(big.Int).SetUint64(0xffffffffffffffff)
+	var result [6]uint64
+	for i := 0; i < 6; i++ {
+		result[i] = new(big.Int).And(n, mask).Uint64()
+		n.Rsh(n, 64)
+	}
+	return result
+}
+
+func PrintMemoryRepr[T any](point *T) {
 	// Get pointer to the struct
 	ptr := unsafe.Pointer(point)
 
